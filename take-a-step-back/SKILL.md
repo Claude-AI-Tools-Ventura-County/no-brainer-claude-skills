@@ -143,6 +143,21 @@ Output:
 >
 > **Do next:** Write down the one capability you believe the tool lacks, then spend a day trying to prove yourself wrong.
 
+## Example 3 — a naming choice that only feels weighty
+
+Input (abridged): "Spinning up a small internal CLI for our deploy steps and I can't decide what to name it — shipit or deploykit. I keep flip-flopping and don't want to lock in a name I'll regret, so I haven't created the repo yet."
+
+Output:
+
+> **Decision:** You're holding off creating the repo until you settle on the "right" name for an internal deploy CLI — "shipit" vs "deploykit".
+>
+> **Step-back check:**
+> - **Most fragile assumption:** That the name is a real commitment worth getting right up front — it's an internal tool with no external consumers, so you're treating a two-way door like a one-way door.
+> - **Downside if wrong:** Effectively zero — the only real cost in play is the time you're burning to avoid a "wrong" pick, and that deliberation already costs more than picking wrong ever would.
+> - **Reversibility:** Easy — renaming later is a find-and-replace across one internal repo, not a migration; nothing downstream depends on the name.
+>
+> **Do next:** Timebox it to 60 seconds, pick the one you'd type without thinking, and create the repo. If it still bugs you in a week, rename it then — you'll have lost nothing.
+
 ## What success looks like
 
 The user should feel slightly interrupted, newly clear-eyed, and more deliberate — not buried in analysis. A good result makes the hidden assumption, the real downside, or the missing alternative immediately visible.

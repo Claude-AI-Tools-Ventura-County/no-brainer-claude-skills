@@ -4,18 +4,19 @@ A small suite of decision-hygiene skills for [Claude Code](https://claude.com/cl
 
 ## The skills
 
-| Skill | The operator's question | Fires |
+| Skill | The operator's question | Its job |
 |---|---|---|
-| [take-a-step-back](take-a-step-back/skill.md) | "Am I making the best decision possible?" | **before** committing — challenge the plan and the framing |
-| [blast-radius](blast-radius/skill.md) | "If I do this, how big is it, what breaks, how hard to undo?" | **during** — size a path you have chosen |
-| [bottom-line](bottom-line/skill.md) | "There's too much here — what's the call?" | **after** — compress overload and analysis paralysis into a decision |
+| [take-a-step-back](take-a-step-back/SKILL.md) | "Am I making the best decision possible?" | **Frame** — challenge the plan and the problem before committing |
+| [iron-triangle](iron-triangle/SKILL.md) | "Which of speed, cost, or quality am I trading away?" | **Price** — make the implicit tradeoff explicit |
+| [blast-radius](blast-radius/SKILL.md) | "How big is the path I chose, what breaks, how hard to undo?" | **Size** — measure cost and reversibility of a chosen path |
+| [bottom-line](bottom-line/SKILL.md) | "There's too much here — what's the call?" | **Cut** — compress overload and analysis paralysis into a decision |
 
-Before / during / after. They **chain**: step back to pick the approach, size it with blast-radius, then cut to the bottom line if the analysis balloons. The same situation can touch all three precisely because they answer different questions at different moments.
+They **chain** along the life of a decision: **frame** it (should I, and is this the right problem?), **price** the tradeoff (which corner gives?), **size** the chosen path (how big, what breaks?), then **cut** to the bottom line when the analysis balloons. The same situation can touch all four precisely because they answer different questions at different moments.
 
 ## What they share
 
 - **Short, structured output.** Every skill leads with the one line that must survive skimming, then adds only the fields that change the decision. Drop anything that doesn't; never pad the template.
-- **One reversibility vocabulary** — **Easy / Costly / One-way door** — so a two-way door is treated differently from a commitment that is expensive to unwind.
+- **A shared reversibility read.** Where it applies, the skills speak one vocabulary — **Easy / Costly / One-way door** — so a two-way door is treated differently from a commitment that is expensive to unwind. (Iron-triangle's version asks whether a sacrificed corner stays *contained* or *compounds*.)
 - **No manufactured drama.** Accurate signal over constant alarm. If a change is small and reversible, they say so and get out of the way.
 
 ## Calibration — what good output looks like
@@ -50,18 +51,19 @@ Symlink them so a `git pull` keeps them current (run from the repo root):
 
 ```bash
 mkdir -p "$HOME/.claude/skills"
-for s in blast-radius bottom-line take-a-step-back; do
+for s in blast-radius bottom-line iron-triangle take-a-step-back; do
   ln -s "$PWD/$s" "$HOME/.claude/skills/$s"
 done
 ```
 
-Claude auto-invokes a skill when the request matches its `description`, or you can call it by name. Note: Claude Code's skill entry file is conventionally `SKILL.md`; these use `skill.md` — rename if your Claude Code version requires uppercase.
+Claude auto-invokes a skill when the request matches its `description`, or you can call it by name. Note: the entry file must be named exactly `SKILL.md` (uppercase) — the loader matches it case-sensitively even on case-insensitive macOS, so a lowercase `skill.md` is silently never discovered.
 
 ## Authoring conventions
 
 Lessons baked into these files. Keep them if you add more skills:
 
 - **Valid frontmatter on line 1.** The file must open with `---` and a YAML `name` + `description`, with no prose preamble and no ` ```yaml ` code fence wrapping it — otherwise the skill silently fails to load and never appears.
+- **Entry file must be `SKILL.md`, exact case.** The loader matches it case-sensitively even on case-insensitive macOS, so a lowercase `skill.md` is silently skipped — and watch for git hiding a case-only rename when `core.ignorecase` is true.
 - **ASCII punctuation.** Straight quotes and regular hyphens. Curly quotes and non-breaking hyphens (`‑`) look identical but break grep, copy, and matching. Em-dashes are fine.
 - **Triggers live in the `description`.** That is the surface Claude matches against — keep it concrete and observable ("about to recommend a migration"), never circular ("fire when the change is major", which the skill can only know *after* running).
 - **Examples calibrate behavior.** Include at least one counter-example where the skill correctly does *not* escalate — a small change, a cheap reversible call — or it will skew toward alarm.
@@ -71,8 +73,9 @@ Lessons baked into these files. Keep them if you add more skills:
 
 ```
 .
-├── take-a-step-back/skill.md
-├── blast-radius/skill.md
-├── bottom-line/skill.md
+├── take-a-step-back/SKILL.md
+├── iron-triangle/SKILL.md
+├── blast-radius/SKILL.md
+├── bottom-line/SKILL.md
 └── README.md
 ```
