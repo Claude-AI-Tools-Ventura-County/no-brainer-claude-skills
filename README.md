@@ -1,4 +1,4 @@
-# No-Brainer Claude Skills
+# Giant Brains Claude Skills
 
 A small suite of decision-hygiene skills for [Claude Code](https://claude.com/claude-code). Each one fires at a different moment around a decision and forces the response into a short, scannable shape — so a human operator can act fast without missing what matters.
 
@@ -79,3 +79,10 @@ Lessons baked into these files. Keep them if you add more skills:
 ├── bottom-line/SKILL.md
 └── README.md
 ```
+
+## Sponsored by
+
+This project is supported by two Southern California meetup communities:
+
+- [Claude & AI Tools — Ventura County](https://www.meetup.com/claude-ai-tools-ventura-county/)
+- [Love2SoCal — Vibe Coding Meetup](https://www.meetup.com/love2socal/)
