@@ -1,16 +1,18 @@
 ---
 name: baseline-spec
 description: >
-  Turn a vague "make it better" into a measurable contract before any optimization or
-  eval begins — a metric, an un-gameable correctness oracle, a budget, and a captured
-  baseline. Fire when the user wants to make something faster, smaller, cleaner,
-  punchier, or higher-scoring but has named no number, no correctness gate, and no
-  stopping rule: "optimize this," "make it cleaner / tighter / more engaging," "tune
-  this prompt," "shrink this," "improve the copy." Default to a one-shot spec sheet that
-  names the metric, the oracle, the budget, and the single missing fact; drop into
-  one-question-at-a-time interrogation only if the operator engages. Refuse to optimize
-  until all three pillars are defined. Skip when the metric, oracle, and budget are
-  already specified — then hand straight to the optimization loop.
+  The DEFINER and entry point of the optimization pair: turn a vague "make it better"
+  into a measurable contract before any optimization or eval begins — a metric, an
+  un-gameable correctness oracle, a budget, and a captured baseline. Fire FIRST, before
+  auto-improve, on any cold-start optimization request that has named no number, no
+  correctness gate, and no stopping rule: "optimize this," "make it faster / cleaner /
+  tighter / more engaging," "tune this prompt," "shrink this," "improve the copy." This
+  skill runs before the executor; do not let the loop fire on an undefined request.
+  Default to a one-shot spec sheet that names the metric, the oracle, the budget, and the
+  single missing fact; drop into one-question-at-a-time interrogation only if the
+  operator engages. Refuse to optimize until all three pillars are defined. Skip only
+  when the metric, oracle, and budget are already specified — then hand straight to
+  auto-improve.
 ---
 
 # Baseline & Spec

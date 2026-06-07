@@ -33,10 +33,10 @@ So the skill's first job is to **gate on those three preconditions and refuse wh
 ## The loop
 
 1. **Baseline** — run the judge K times; record the median and its spread.
-2. **Snapshot** — `git stash` or commit, so revert is mechanical, not the model's opinion.
+2. **Snapshot** — copy the *single target file* aside (or use a dedicated worktree/branch), so revert is mechanical and can't disturb unrelated work — never a whole-repo `git stash` or per-iteration commits.
 3. **One change** — a single targeted edit to the target only.
 4. **Re-judge** — reject if correctness fails, if it's slower, **or if the gain falls inside the measured noise band.** Accept only a statistically real win.
-5. **Commit or revert** — accept → commit and update the baseline; reject → hard-revert to the snapshot.
+5. **Commit or revert** — accept → keep the change and update the baseline; reject → restore the target file from its snapshot, touching nothing else.
 6. **Repeat** until the budget is spent or M consecutive rounds yield no real improvement.
 7. **Validate the winner** against a *second held-out eval the agent never saw*, to catch benchmark overfit.
 8. **Report honestly** — start → end metric, % gain, the spread, and what actually changed.

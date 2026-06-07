@@ -42,9 +42,19 @@ One of two honest outcomes: a change that is **repeatably, verifiably better** a
 
 ## Using it beyond code
 
+> ### ⚠️ Disclaimer — legal, compliance, and other high-stakes text
+>
+> This software is licensed under **GPL v2** and is provided **"as is", without warranty of any kind** (see [LICENSE](../LICENSE) and sections 11–12 of the GPL). We cannot control how you use it.
+>
+> **We do not encourage or condone using this skill to review, simplify, or rewrite legal, regulatory, compliance, medical, financial, or safety-critical documents.** The examples in this FAQ that touch such material (e.g. Terms of Service simplification) describe what the loop is *mechanically capable of* — they are **not** recommendations and **not** legal advice.
+>
+> The oracle this skill relies on — including any LLM-as-judge — **cannot prove semantic preservation.** A run can score as "passing" while quietly weakening, broadening, or voiding a legal obligation. For anything where wording carries legal or regulatory weight, have a qualified human professional review every change. **You assume all risk for how you apply this tool.**
+
 ### Can I use this on non-code work — prose, contracts, marketing copy?
 
-Yes, absolutely. The framework doesn't care whether it's mutating a TypeScript file, a legal contract, or a marketing pitch. It only cares that the text can be evaluated against **a hard number and a strict correctness gate.** Swap the unit tests for a prose-checking harness and the architecture is identical.
+For low-stakes copy — marketing pitches, SEO snippets, internal docs — yes, absolutely. The framework doesn't care whether it's mutating a TypeScript file or a marketing pitch; it only cares that the text can be evaluated against **a hard number and a strict correctness gate.** Swap the unit tests for a prose-checking harness and the architecture is identical.
+
+For **high-stakes text where wording carries legal, regulatory, or safety weight, read the disclaimer above first** — the framework can run, but no automated oracle can guarantee it preserved meaning, so it is not an appropriate place to trust an autonomous loop.
 
 ### So what's actually the hard part for non-code work?
 
@@ -81,7 +91,7 @@ The cold-outbound example end to end:
 ### Where does the non-code version shine?
 
 - **SEO meta descriptions** — maximize keyword density while staying strictly under Google's ~160-character truncation limit.
-- **Legal / compliance simplification** — lower the reading grade of a Terms of Service, using an LLM-as-judge oracle prompted to confirm all (say) 10 distinct legal liabilities still survive.
+- **Legal / compliance simplification** — lower the reading grade of a Terms of Service, using an LLM-as-judge oracle prompted to confirm all (say) 10 distinct legal liabilities still survive. **⚠️ See the disclaimer below — we do not recommend this. An LLM-as-judge cannot prove semantic preservation, and a "passing" run can silently weaken or void legal obligations. This bullet illustrates a *mechanically possible* use, not an endorsed one.**
 - **System prompts (meta-optimization)** — shrink the token count of a large system prompt while it still passes a suite of 20 benchmark questions.
 
 ### When does it fail for prose?
@@ -118,7 +128,13 @@ No. You're paying for a handful of context windows of text generation — **penn
 
 ### Why is the revert mechanical instead of letting the agent decide?
 
-So the agent can't talk itself into keeping a bad change, and — just as important — the revert is *hard*: the model never sees the rejected state again. That stops it from accumulating knowledge of rejected paths and slowly learning to game the judge across many tries. Keep/revert is a `git stash`/commit decision, not an opinion.
+So the agent can't talk itself into keeping a bad change. Keep/revert is a mechanical decision, not an opinion — on reject, the harness restores the target file from its snapshot.
+
+One honest correction to an earlier framing: reverting the file does **not** mean "the model never sees the rejected state again." The model still has the rejected diff and the judge's verdict in its context, so across many iterations it can in principle learn the judge's quirks. What actually prevents gaming is a strong oracle (fresh/generated inputs, not a fixed fixture) plus the held-out second eval — not context erasure. On a long or high-stakes run, clear the context between iterations if you want that memory gone too.
+
+### Is it safe to run this in a repo with uncommitted changes?
+
+Be careful — snapshot and revert must operate on the **single target file only** (`cp target target.bak`, restore on reject). Do **not** `git stash` the whole repo or commit each loop iteration to your working branch: a whole-repo stash can clobber unrelated uncommitted work, and per-iteration commits litter history. Safest is to start from a clean target — commit or stash *your own* work first — or run the loop in a dedicated git worktree or throwaway branch, so nothing the loop does can touch the rest of your tree.
 
 ---
 

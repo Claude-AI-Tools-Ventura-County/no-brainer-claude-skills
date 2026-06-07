@@ -1,17 +1,18 @@
 ---
 name: auto-improve
 description: >
-  Run a bounded, self-verifying optimization loop that measurably improves a piece of
-  code — and refuse to run one when the problem can't be measured honestly. Fire when
-  the user wants to make something faster, smaller, cheaper, or higher-scoring against
-  a metric: reduce latency or memory, shrink a bundle or token count, raise throughput
-  or an eval pass-rate, tune a hot path, regex, query, or prompt. Also trigger on
-  phrases like "optimize this," "make it faster," "auto-tune," "let it iterate until
-  it's faster," "hill-climb this," or "Karpathy-style optimization loop." Before
-  running, gate on three preconditions — a scalar metric, a strong correctness oracle,
-  and a fixed budget. If any is missing, do NOT run the loop; say which one is missing
-  and propose making it measurable first. Skip entirely when the goal is subjective
-  ("cleaner," "more readable") with no number behind it.
+  The EXECUTOR of the optimization pair: run a bounded, self-verifying loop that
+  measurably improves a single file, only AFTER a measurable contract already exists.
+  Fire when a scalar metric, a strong correctness oracle, and a fixed budget are
+  ALREADY defined — typically handed off by baseline-spec, or when the user says they
+  have a benchmark/eval and a baseline — or when the user explicitly invokes the loop:
+  "run the auto-improve loop," "let it iterate until it's faster," "hill-climb this,"
+  "auto-tune against my benchmark," "Karpathy-style optimization loop." For a cold-start
+  request that has NOT yet named a number, gate, and stop — "optimize this," "make it
+  faster," "make it cleaner," "tune this prompt" — do NOT run this loop; defer to
+  baseline-spec to define the contract first. Re-gate on the three preconditions before
+  every run; if any is missing, refuse and name it. Skip entirely when the goal is
+  subjective with no number behind it.
 ---
 
 # Auto-Improve
@@ -38,13 +39,15 @@ Run the loop **only** when all three hold. If any fails, stop and say which one 
 - **The target (the only mutable file).** The code under optimization, and nothing else.
 - **The brief.** Goal, the exact metric, the don't-touch list, and the budget.
 
+**Isolation precondition (don't skip).** Snapshot and revert operate on the **single target file only** — never `git stash` or commit the whole repo. A whole-repo stash can clobber unrelated uncommitted work; per-iteration commits litter your history. Before starting, either commit/stash *your own* in-progress work so the target's directory is clean, or run the loop in a dedicated git worktree or throwaway branch. The loop must never be able to touch anything but the target.
+
 ## The loop
 
 1. **Baseline.** Run the judge K times; record the median and its spread.
-2. **Snapshot.** `git stash` or commit, so revert is mechanical — not the model's opinion of whether to undo.
+2. **Snapshot the target only.** Copy the single target file aside (e.g. `cp target target.bak`), or rely on the dedicated worktree/branch. Snapshot *only the file under optimization* — never `git stash` the whole repo — so revert is mechanical *and* can't disturb the rest of your tree.
 3. **One change.** Make a single targeted edit to the target only — so every accept/reject is attributable to one cause.
 4. **Re-judge.** Reject if correctness fails, if it's slower, **or if the gain doesn't clear the noise band** — concretely, require the improvement to exceed **2× the baseline's median absolute deviation (MAD)**. Fix that threshold once, up front; never loosen it mid-run to rescue a change.
-5. **Commit or revert.** On accept, commit and update the baseline. On reject, hard-revert to the snapshot.
+5. **Commit or revert.** On accept, keep the change and update the baseline. On reject, restore the target from its snapshot (`mv target.bak target`) — touching nothing else.
 6. **Repeat** until the budget is spent or M consecutive iterations yield no real improvement. **Escape hatch:** if the loop stalls after M flat rounds, permit *one* paired mutation — up to two coordinated edits that only pay off together (e.g. inlining + loop interchange) — under the exact same gate. Some wins are unreachable one line at a time; don't let the single-change rule halt the search prematurely.
 7. **Validate the winner.** Re-run the final version against a *second held-out eval the agent never saw* to catch benchmark overfit. For prompt/eval tuning especially, make this a **different, truly blind metric** — not just another split of the same eval format — because an optimizer that sees the judge repeatedly can meta-overfit its scoring quirks, not only its inputs.
 8. **Report honestly:** start → end metric, % gain, the spread (so the gain is credible), and what actually changed.
@@ -57,7 +60,7 @@ Run the loop **only** when all three hold. If any fails, stop and say which one 
 
 **A win inside the noise is not a win.** Require improvement beyond measured variance. Otherwise a random walk masquerades as progress.
 
-**Free — and hard — revert is the whole point.** Every iteration starts from a known-good snapshot, so a bad mutation costs nothing. The revert is *hard*: the model never sees the rejected state again, so it can't accumulate knowledge of rejected paths and learn to game the judge over many tries.
+**Free, file-scoped revert is the whole point.** Every iteration starts from a known-good snapshot of the target, so a bad mutation costs nothing and never touches the rest of your tree. Be honest about the limit, though: reverting the *file* does not wipe the model's *context* — it still recalls the diffs it tried and the verdicts it got this run, so it can in principle learn the judge's quirks across iterations. What actually stops gaming is the **oracle** (fresh/generated inputs, not a fixed fixture) and the **held-out second eval** — not context erasure. On a long or high-stakes run, clear the context between iterations if you want that memory gone too.
 
 **Measure honestly or not at all.** Warmup, repeat, median, report spread. Single-run milliseconds lie.
 
