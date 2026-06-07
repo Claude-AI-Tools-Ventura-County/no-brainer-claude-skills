@@ -1,6 +1,6 @@
 # Giant Brains Claude Skills
 
-<img width="1941" height="1058" alt="giant-brains" src="https://github.com/user-attachments/assets/29c74b95-20a6-430d-92b2-82e92a06346f" />
+<img width="1941" height="1058" alt="giant-brains-02" src="https://github.com/user-attachments/assets/d5a0e02b-eec2-4026-b83e-cf725def5942" />
 
 Six Claude Code skills that catch you at the moment of a decision — and again when you're improving something — and force a short, honest answer you can act on in seconds.
 
