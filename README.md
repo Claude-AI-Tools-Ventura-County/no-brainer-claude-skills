@@ -1,7 +1,8 @@
 # Giant Brains Claude Skills
 
 Maintainer: Noel Saw
-LLMs: Claude Code (Effort Max), Claude Opus 4.8, Gemini Pro 3.1, and DeepSeek Deep Think
+LLMs: Claude Code (Effort Max), 
+Cross Reviewed by: Gemini Pro 3.1, ChatGPT 5.5, and DeepSeek DeepThink
 
 ## Sponsored by
 This project is supported by two Southern California meetup communities and HiQS.ai.
@@ -127,3 +128,5 @@ Lessons baked into these files. Keep them if you add more skills:
 │   └── FAQS.md
 └── README.md
 ```
+
+<img width="1941" height="1058" alt="giant-brains" src="https://github.com/user-attachments/assets/29c74b95-20a6-430d-92b2-82e92a06346f" />
