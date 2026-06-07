@@ -1,53 +1,28 @@
 # Giant Brains Claude Skills
 
-Maintainer: Noel Saw  
-LLMs: Claude Code (Effort Max)   
-Cross Reviewed by: Gemini Pro 3.1, ChatGPT 5.5, and DeepSeek DeepThink   
+<img width="1941" height="1058" alt="giant-brains" src="https://github.com/user-attachments/assets/29c74b95-20a6-430d-92b2-82e92a06346f" />
 
-## Sponsored by
-This project is supported by two Southern California meetup communities and HiQS.ai.
-- [Claude & AI Tools — Ventura County](https://www.meetup.com/claude-ai-tools-ventura-county/)
-- [Love2SoCal — Vibe Coding Meetup](https://www.meetup.com/love2socal/)
-
-## License
-GPL V2.0 - See LICENSE.md for details.
+Six Claude Code skills that catch you at the moment of a decision — and again when you're improving something — and force a short, honest answer you can act on in seconds.
 
 ## About
 
 A suite of skills for [Claude Code](https://claude.com/claude-code) that bring hygiene to the whole life of getting something better — first **deciding well**, then **improving it verifiably**. Each fires at a different moment and forces the response into a short, scannable shape — so a human operator can act fast without missing what matters. The throughline: *make the implicit explicit, lead with the line that survives skimming, and refuse rather than fake it.*
 
-## Install
+## What you get
 
-These are [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) built on the open `SKILL.md` standard, so the same files install across every Claude surface.
+- **Faster calls, fewer blind spots.** Every answer leads with the one line that must survive skimming, then adds only the fields that change the decision — no wall of text to wade through.
+- **Hidden tradeoffs made explicit.** The cost you're actually paying — the corner you're sacrificing, the assumption you're betting on, the blast radius of the path you picked — gets named out loud *before* you commit.
+- **A shared reversibility read.** Every skill speaks one vocabulary — **Easy / Costly / One-way door** — so a cheap two-way door never gets treated like a commitment that's expensive to unwind.
+- **Honest signal, not constant alarm.** They stay quiet when a change is small and reversible, and refuse rather than fake a verdict they can't stand behind. Calibration is as much about declining as raising a flag.
+- **Improvement you can prove.** Act II turns "make it better" into a metric, an un-gameable oracle, and a baseline, then runs a self-verifying loop that returns a real, numbered win — or a clean "no gain found."
 
-### Claude.ai (web) and Claude Desktop
+## When to reach for it
 
-The web app and desktop app share one flow: enable code execution, then upload each skill as its own ZIP.
-
-1. **Enable execution.** Open **Settings > Capabilities** and turn on **Code execution and file creation**. (Available on Free, Pro, Max, Team, and Enterprise plans. On Team/Enterprise, an owner must first enable it under **Organization settings > Skills**.)
-2. **Zip each skill folder** — one ZIP per skill, each with a `SKILL.md` at its root. Run from the repo root:
-   ```bash
-   for s in take-a-step-back iron-triangle blast-radius bottom-line baseline-spec auto-improve; do
-     (cd "$s" && zip -rX "../$s.zip" . -x '.*')
-   done
-   ```
-3. **Upload.** In Claude, go to **Customize > Skills**, click **+ > + Create skill > Upload a skill**, and select one ZIP. Repeat for each skill.
-4. **Turn it on** under **Customize > Skills**.
-
-Uploaded custom skills are private to your account. Install only from sources you trust, and review each `SKILL.md` before enabling.
-
-### Claude Code
-
-Put each skill directory where Claude Code looks for skills — **personal (all projects):** `~/.claude/skills/`, or **project (shared with a repo):** `<project>/.claude/skills/`. Symlink them so a `git pull` keeps them current (run from the repo root):
-
-```bash
-mkdir -p "$HOME/.claude/skills"
-for s in blast-radius bottom-line iron-triangle take-a-step-back baseline-spec auto-improve; do
-  ln -s "$PWD/$s" "$HOME/.claude/skills/$s"
-done
-```
-
-Claude auto-invokes a skill when the request matches its `description`, or you can call it by name. The entry file must be named exactly `SKILL.md` (uppercase) — the loader matches it case-sensitively even on case-insensitive macOS, so a lowercase `skill.md` is silently never discovered.
+- **You're about to commit to a plan or migration** and want to pressure-test the framing before you start — [take-a-step-back](take-a-step-back/SKILL.md).
+- **A deadline is squeezing you** and you need to name which of speed, cost, or quality you're actually trading away — [iron-triangle](iron-triangle/SKILL.md).
+- **You're eyeing a refactor or schema change** and need to know how far it ripples and how hard it is to undo — [blast-radius](blast-radius/SKILL.md).
+- **An agent handed you a wall of options** and you just need the call — [bottom-line](bottom-line/SKILL.md).
+- **You told an agent "make this faster"** but can't tell whether it actually did — [baseline-spec](baseline-spec/SKILL.md) to define what "better" means, then [auto-improve](auto-improve/SKILL.md) to prove it.
 
 ## Act I — Deciding well (decision hygiene)
 
@@ -102,6 +77,39 @@ What makes it good:
 
 The inverse matters just as much: a good skill also knows when *not* to escalate. See `blast-radius`'s small-change example, where the right answer is "ship it, low risk" — calibration is as much about staying quiet as raising a flag.
 
+## Install
+
+These are [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) built on the open `SKILL.md` standard, so the same files install across every Claude surface.
+
+### Claude.ai (web) and Claude Desktop
+
+The web app and desktop app share one flow: enable code execution, then upload each skill as its own ZIP.
+
+1. **Enable execution.** Open **Settings > Capabilities** and turn on **Code execution and file creation**. (Available on Free, Pro, Max, Team, and Enterprise plans. On Team/Enterprise, an owner must first enable it under **Organization settings > Skills**.)
+2. **Zip each skill folder** — one ZIP per skill, each with a `SKILL.md` at its root. Run from the repo root:
+   ```bash
+   for s in take-a-step-back iron-triangle blast-radius bottom-line baseline-spec auto-improve; do
+     (cd "$s" && zip -rX "../$s.zip" . -x '.*')
+   done
+   ```
+3. **Upload.** In Claude, go to **Customize > Skills**, click **+ > + Create skill > Upload a skill**, and select one ZIP. Repeat for each skill.
+4. **Turn it on** under **Customize > Skills**.
+
+Uploaded custom skills are private to your account. Install only from sources you trust, and review each `SKILL.md` before enabling.
+
+### Claude Code
+
+Put each skill directory where Claude Code looks for skills — **personal (all projects):** `~/.claude/skills/`, or **project (shared with a repo):** `<project>/.claude/skills/`. Symlink them so a `git pull` keeps them current (run from the repo root):
+
+```bash
+mkdir -p "$HOME/.claude/skills"
+for s in blast-radius bottom-line iron-triangle take-a-step-back baseline-spec auto-improve; do
+  ln -s "$PWD/$s" "$HOME/.claude/skills/$s"
+done
+```
+
+Claude auto-invokes a skill when the request matches its `description`, or you can call it by name. The entry file must be named exactly `SKILL.md` (uppercase) — the loader matches it case-sensitively even on case-insensitive macOS, so a lowercase `skill.md` is silently never discovered.
+
 ## Authoring conventions
 
 Lessons baked into these files. Keep them if you add more skills:
@@ -129,4 +137,19 @@ Lessons baked into these files. Keep them if you add more skills:
 └── README.md
 ```
 
-<img width="1941" height="1058" alt="giant-brains" src="https://github.com/user-attachments/assets/29c74b95-20a6-430d-92b2-82e92a06346f" />
+## Maintainer & reviewers
+
+- **Maintainer:** Noel Saw
+- **Built with:** Claude Code (Effort Max)
+- **Cross-reviewed by:** Gemini Pro 3.1, ChatGPT 5.5, and DeepSeek DeepThink
+
+## Sponsored by
+
+This project is supported by two Southern California meetup communities and HiQS.ai.
+
+- [Claude & AI Tools — Ventura County](https://www.meetup.com/claude-ai-tools-ventura-county/)
+- [Love2SoCal — Vibe Coding Meetup](https://www.meetup.com/love2socal/)
+
+## License
+
+GPL V2.0 - See LICENSE.md for details.
