@@ -1,6 +1,52 @@
 # Giant Brains Claude Skills
 
+Maintainer: Noel Saw
+LLMs: Claude Code (Effort Max), Claude Opus 4.8, Gemini Pro 3.1, and DeepSeek Deep Think
+
+## Sponsored by
+This project is supported by two Southern California meetup communities and HiQS.ai.
+- [Claude & AI Tools — Ventura County](https://www.meetup.com/claude-ai-tools-ventura-county/)
+- [Love2SoCal — Vibe Coding Meetup](https://www.meetup.com/love2socal/)
+
+## License
+GPL V2.0 - See LICENSE.md for details.
+
+## About
+
 A suite of skills for [Claude Code](https://claude.com/claude-code) that bring hygiene to the whole life of getting something better — first **deciding well**, then **improving it verifiably**. Each fires at a different moment and forces the response into a short, scannable shape — so a human operator can act fast without missing what matters. The throughline: *make the implicit explicit, lead with the line that survives skimming, and refuse rather than fake it.*
+
+## Install
+
+These are [Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) built on the open `SKILL.md` standard, so the same files install across every Claude surface.
+
+### Claude.ai (web) and Claude Desktop
+
+The web app and desktop app share one flow: enable code execution, then upload each skill as its own ZIP.
+
+1. **Enable execution.** Open **Settings > Capabilities** and turn on **Code execution and file creation**. (Available on Free, Pro, Max, Team, and Enterprise plans. On Team/Enterprise, an owner must first enable it under **Organization settings > Skills**.)
+2. **Zip each skill folder** — one ZIP per skill, each with a `SKILL.md` at its root. Run from the repo root:
+   ```bash
+   for s in take-a-step-back iron-triangle blast-radius bottom-line baseline-spec auto-improve; do
+     (cd "$s" && zip -rX "../$s.zip" . -x '.*')
+   done
+   ```
+3. **Upload.** In Claude, go to **Customize > Skills**, click **+ > + Create skill > Upload a skill**, and select one ZIP. Repeat for each skill.
+4. **Turn it on** under **Customize > Skills**.
+
+Uploaded custom skills are private to your account. Install only from sources you trust, and review each `SKILL.md` before enabling.
+
+### Claude Code
+
+Put each skill directory where Claude Code looks for skills — **personal (all projects):** `~/.claude/skills/`, or **project (shared with a repo):** `<project>/.claude/skills/`. Symlink them so a `git pull` keeps them current (run from the repo root):
+
+```bash
+mkdir -p "$HOME/.claude/skills"
+for s in blast-radius bottom-line iron-triangle take-a-step-back baseline-spec auto-improve; do
+  ln -s "$PWD/$s" "$HOME/.claude/skills/$s"
+done
+```
+
+Claude auto-invokes a skill when the request matches its `description`, or you can call it by name. The entry file must be named exactly `SKILL.md` (uppercase) — the loader matches it case-sensitively even on case-insensitive macOS, so a lowercase `skill.md` is silently never discovered.
 
 ## Act I — Deciding well (decision hygiene)
 
@@ -55,24 +101,6 @@ What makes it good:
 
 The inverse matters just as much: a good skill also knows when *not* to escalate. See `blast-radius`'s small-change example, where the right answer is "ship it, low risk" — calibration is as much about staying quiet as raising a flag.
 
-## Installing
-
-These are Claude Code Agent Skills. Put each skill directory where Claude Code looks for skills:
-
-- **Personal (all your projects):** `~/.claude/skills/`
-- **Project (shared with a repo):** `<project>/.claude/skills/`
-
-Symlink them so a `git pull` keeps them current (run from the repo root):
-
-```bash
-mkdir -p "$HOME/.claude/skills"
-for s in blast-radius bottom-line iron-triangle take-a-step-back baseline-spec auto-improve; do
-  ln -s "$PWD/$s" "$HOME/.claude/skills/$s"
-done
-```
-
-Claude auto-invokes a skill when the request matches its `description`, or you can call it by name. Note: the entry file must be named exactly `SKILL.md` (uppercase) — the loader matches it case-sensitively even on case-insensitive macOS, so a lowercase `skill.md` is silently never discovered.
-
 ## Authoring conventions
 
 Lessons baked into these files. Keep them if you add more skills:
@@ -99,10 +127,3 @@ Lessons baked into these files. Keep them if you add more skills:
 │   └── FAQS.md
 └── README.md
 ```
-
-## Sponsored by
-
-This project is supported by two Southern California meetup communities:
-
-- [Claude & AI Tools — Ventura County](https://www.meetup.com/claude-ai-tools-ventura-county/)
-- [Love2SoCal — Vibe Coding Meetup](https://www.meetup.com/love2socal/)
