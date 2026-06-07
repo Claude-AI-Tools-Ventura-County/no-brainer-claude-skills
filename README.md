@@ -1,8 +1,10 @@
 # Giant Brains Claude Skills
 
-A small suite of decision-hygiene skills for [Claude Code](https://claude.com/claude-code). Each one fires at a different moment around a decision and forces the response into a short, scannable shape — so a human operator can act fast without missing what matters.
+A suite of skills for [Claude Code](https://claude.com/claude-code) that bring hygiene to the whole life of getting something better — first **deciding well**, then **improving it verifiably**. Each fires at a different moment and forces the response into a short, scannable shape — so a human operator can act fast without missing what matters. The throughline: *make the implicit explicit, lead with the line that survives skimming, and refuse rather than fake it.*
 
-## The skills
+## Act I — Deciding well (decision hygiene)
+
+Four skills that fire around a decision, each answering a different question at a different moment.
 
 | Skill | The operator's question | Its job |
 |---|---|---|
@@ -13,11 +15,24 @@ A small suite of decision-hygiene skills for [Claude Code](https://claude.com/cl
 
 They **chain** along the life of a decision: **frame** it (should I, and is this the right problem?), **price** the tradeoff (which corner gives?), **size** the chosen path (how big, what breaks?), then **cut** to the bottom line when the analysis balloons. The same situation can touch all four precisely because they answer different questions at different moments.
 
+## Act II — Improving verifiably (measure, then optimize)
+
+Once you've decided to make something concretely better, a second pair carries it from a vibe to a proven result.
+
+| Skill | The operator's question | Its job |
+|---|---|---|
+| [baseline-spec](baseline-spec/SKILL.md) | "What does 'better' even mean, and how would I know?" | **Define** — turn "make it better" into a metric, oracle, budget, and baseline |
+| [auto-improve](auto-improve/SKILL.md) | "Now make it better — provably, not just plausibly." | **Improve** — run a bounded, self-verifying loop, or honestly report no gain |
+
+These **chain** too: **define** the measurable contract, then **improve** against it. [baseline-spec](baseline-spec/SKILL.md) refuses to optimize a goal it can't measure — exactly the Act I instinct of *refuse rather than fake it* — and hands off to [auto-improve](auto-improve/SKILL.md) only once a metric, an un-gameable oracle, and a budget exist. auto-improve is the suite's one **executional** skill: instead of emitting a verdict, it runs a ratcheted mutate-measure-keep-or-revert search and returns either a verified, numbered win or a clean "no real improvement found." See its [README](auto-improve/README.md) and [operator FAQ](auto-improve/FAQS.md).
+
+The two acts join end to end: decide *whether and what* (Act I), then *prove the improvement* (Act II).
+
 ## What they share
 
-- **Short, structured output.** Every skill leads with the one line that must survive skimming, then adds only the fields that change the decision. Drop anything that doesn't; never pad the template.
+- **Short, structured output.** Every skill leads with the one line that must survive skimming, then adds only the fields that change the call. Drop anything that doesn't; never pad the template. `baseline-spec` follows the same one-shot, scannable shape as the four decision skills; `auto-improve` is the lone exception — it *executes* a loop rather than emitting a verdict, but still leads with an honest headline number.
 - **A shared reversibility read.** Where it applies, the skills speak one vocabulary — **Easy / Costly / One-way door** — so a two-way door is treated differently from a commitment that is expensive to unwind. (Iron-triangle's version asks whether a sacrificed corner stays *contained* or *compounds*.)
-- **No manufactured drama.** Accurate signal over constant alarm. If a change is small and reversible, they say so and get out of the way.
+- **Refuse rather than fake it.** Accurate signal over constant alarm. The decision skills stay quiet when a change is small and reversible; `baseline-spec` refuses to optimize a goal it can't measure; `auto-improve` rejects any "win" that's gamed or lost in the noise. Calibration is as much about declining as raising a flag.
 
 ## Calibration — what good output looks like
 
@@ -51,7 +66,7 @@ Symlink them so a `git pull` keeps them current (run from the repo root):
 
 ```bash
 mkdir -p "$HOME/.claude/skills"
-for s in blast-radius bottom-line iron-triangle take-a-step-back; do
+for s in blast-radius bottom-line iron-triangle take-a-step-back baseline-spec auto-improve; do
   ln -s "$PWD/$s" "$HOME/.claude/skills/$s"
 done
 ```
@@ -73,10 +88,15 @@ Lessons baked into these files. Keep them if you add more skills:
 
 ```
 .
-├── take-a-step-back/SKILL.md
+├── take-a-step-back/SKILL.md     # Act I — decision hygiene
 ├── iron-triangle/SKILL.md
 ├── blast-radius/SKILL.md
 ├── bottom-line/SKILL.md
+├── baseline-spec/SKILL.md        # Act II — measure, then optimize
+├── auto-improve/
+│   ├── SKILL.md
+│   ├── README.md
+│   └── FAQS.md
 └── README.md
 ```
 

@@ -1,99 +1,92 @@
 ---
-name: blast-radius
+name: auto-improve
 description: >
-  Flag the true cost of a recommendation before the user commits, so a large or
-  hard-to-reverse change is never presented like a minor tweak. Fire automatically
-  when you are about to recommend a refactor, a migration, a schema change, a
-  dependency or framework swap, a public API or contract change, a move across
-  service boundaries, or anything else expensive to adopt or painful to undo. Also
-  trigger when the user asks whether something is "a big change," "a major
-  refactor," "risky," "breaking," "hard to unwind," "a one-way door," "painting us
-  into a corner," or "more work than it sounds." Skip only when the user explicitly
-  asks for the best path regardless of cost.
+  Run a bounded, self-verifying optimization loop that measurably improves a piece of
+  code — and refuse to run one when the problem can't be measured honestly. Fire when
+  the user wants to make something faster, smaller, cheaper, or higher-scoring against
+  a metric: reduce latency or memory, shrink a bundle or token count, raise throughput
+  or an eval pass-rate, tune a hot path, regex, query, or prompt. Also trigger on
+  phrases like "optimize this," "make it faster," "auto-tune," "let it iterate until
+  it's faster," "hill-climb this," or "Karpathy-style optimization loop." Before
+  running, gate on three preconditions — a scalar metric, a strong correctness oracle,
+  and a fixed budget. If any is missing, do NOT run the loop; say which one is missing
+  and propose making it measurable first. Skip entirely when the goal is subjective
+  ("cleaner," "more readable") with no number behind it.
 ---
 
-# Blast Radius
+# Auto-Improve
 
-Make hidden implementation cost impossible to miss.
+Turn optimization into a verifiable, ratcheted search — and know when not to.
 
-You often recommend the structurally "best" option without flagging that it is actually a major refactor, a breaking change, or a hard-to-reverse commitment. This skill forces the answer to name the size of the change, show the blast radius, and offer a safer reversible path when one exists.
+The appealing idea — point an agent at a file, let it mutate-measure-keep-or-revert until the code is faster — is real for a narrow class of problems and pure hype for the rest. What separates the two is not the loop. It's whether you can **measure the result honestly** and **catch a cheated win**. This skill enforces that, and refuses the loop when you can't. Most real-world code lacks a trustworthy oracle, so expect this skill to refuse more often than it runs — that is the design, not a shortfall.
 
 ## Core idea
 
-Don't just judge whether the recommendation is good in theory. Judge whether it is **cheap or expensive to adopt**, **safe or risky to roll out**, and **easy or painful to undo** — and say so plainly.
+The LLM *proposes* changes; the harness *decides* whether to keep them. A change survives only if a strong correctness gate still passes on fresh inputs **and** a cheap, repeatable metric improves beyond measurement noise. Every rejected change is reverted mechanically, for free. Done right, you return to code that is empirically, repeatably better — with an honest number — or to a clear "no real improvement found." You never ship a gamed or noise-driven win.
 
-The goal is not to block ambitious changes. It is to stop large commitments from being presented like minor tweaks — and equally, to *not* dramatize work that is genuinely small.
+## Gate first — three preconditions
 
-## Output format
+Run the loop **only** when all three hold. If any fails, stop and say which one — that refusal is the skill working, not failing. Defining these three (and capturing the baseline) is the job of the companion [baseline-spec](../baseline-spec/SKILL.md) skill; this skill assumes they exist and executes.
 
-Lead with the TL;DR — it is the one line that must survive skimming. Then add only the supporting fields that earn their place, one line each. Drop any field that doesn't apply; never pad the template. A genuinely small change might be just a TL;DR and a Do next.
+1. **A scalar metric.** One number, cheap and repeatable to measure: median latency, peak memory, bundle bytes, token count, throughput, eval pass-rate. If the goal is "cleaner" or "more DRY," there is no gradient to climb — convert it to a real metric (LOC, cyclomatic complexity, a passing test count) or do a normal review instead.
+2. **A strong oracle.** A correctness check the optimizer cannot cheaply game — randomized/held-out inputs, property-based or metamorphic tests, or differential comparison against a frozen reference implementation. Litmus test: *if gaming the oracle is easier than satisfying it, stop.* A weak oracle doesn't produce faster code; it produces subtly broken code that scores well. **Weak oracle, concretely:** a fixed set of five inputs the optimizer can read, memorize, and special-case — it will. The harder the domain (e.g. verifying a React component's render output), the more you need *generated* inputs plus metamorphic relations, not a hand-picked fixture. Constructing the oracle is usually the hardest part of the whole setup; don't overestimate the suite you already have.
+3. **A fixed budget.** A hard cap on iterations, wall-clock, or spend, set up front — plus a diminishing-returns stop (halt after M consecutive non-improvements).
 
-**TL;DR:** [⚠️ for Medium/Major, ✅ for Small] **[Small / Medium / Major]** — [one sentence: what makes it this size, and the safer path if there is one.]
+## The setup — three files
 
-**Change level:** [Small / Medium / Major] — [the single most severe signal that sets the tier.]
+- **The judge (immutable).** Generates *fresh, randomized* inputs each run, asserts correctness against the reference or properties, and emits one scalar. It measures with **warmup + N repetitions + median**, and reports the spread. The agent may never edit it. A judge that reuses a fixed fixture the agent can read is an invitation to overfit.
+- **The target (the only mutable file).** The code under optimization, and nothing else.
+- **The brief.** Goal, the exact metric, the don't-touch list, and the budget.
 
-**Blast radius:** [Concretely what has to change and who breaks — schema, API consumers, tests, deploy flow, client code, infra, docs, team coordination. Name the systems, not "it's complex."]
+## The loop
 
-**Reversibility:** [Easy / Costly / One-way door] — [what locks in, and how hard it is to back out.]
-
-**Safer path:** [A smaller, more reversible first step — pilot, adapter, flag, abstraction — or "none meaningful."]
-
-**Do next:** [The cheapest step that validates the recommendation before full commitment.]
-
-*Add only when you can't size it confidently —* **Missing:** [the one or two facts that would settle the tier]. **Confidence:** [High / Medium / Low].
-
-## Classifying the change
-
-Pick the tier of the **most severe** signal present.
-
-**Small** — local and reversible. One module or file; no schema or public-contract change; no user-facing disruption; easy rollback.
-
-**Medium** — bounded but spreading. Several modules or integration points; coordinated testing; maybe a data backfill, adapter, or rollout plan; rollback has cost but is manageable.
-
-**Major** — changes architecture, contracts, or ownership boundaries. Schema migration with application impact; public API or interface change; breaking changes for downstream consumers; replacing a foundational library or framework; moving logic across service boundaries; vendor or pattern lock-in; coordinated frontend + backend + infra rollout.
-
-**Tie-breaker:** between Medium and Major, choose Major when rollback is expensive or coordination cost is high.
+1. **Baseline.** Run the judge K times; record the median and its spread.
+2. **Snapshot.** `git stash` or commit, so revert is mechanical — not the model's opinion of whether to undo.
+3. **One change.** Make a single targeted edit to the target only — so every accept/reject is attributable to one cause.
+4. **Re-judge.** Reject if correctness fails, if it's slower, **or if the gain doesn't clear the noise band** — concretely, require the improvement to exceed **2× the baseline's median absolute deviation (MAD)**. Fix that threshold once, up front; never loosen it mid-run to rescue a change.
+5. **Commit or revert.** On accept, commit and update the baseline. On reject, hard-revert to the snapshot.
+6. **Repeat** until the budget is spent or M consecutive iterations yield no real improvement. **Escape hatch:** if the loop stalls after M flat rounds, permit *one* paired mutation — up to two coordinated edits that only pay off together (e.g. inlining + loop interchange) — under the exact same gate. Some wins are unreachable one line at a time; don't let the single-change rule halt the search prematurely.
+7. **Validate the winner.** Re-run the final version against a *second held-out eval the agent never saw* to catch benchmark overfit. For prompt/eval tuning especially, make this a **different, truly blind metric** — not just another split of the same eval format — because an optimizer that sees the judge repeatedly can meta-overfit its scoring quirks, not only its inputs.
+8. **Report honestly:** start → end metric, % gain, the spread (so the gain is credible), and what actually changed.
 
 ## Principles
 
-**Don't bury the warning.** If it is a major refactor or likely to break things, that is the TL;DR — not a footnote.
+**The harness decides, the model proposes.** Keep/revert is mechanical. The moment the agent is trusted to judge its own win, the ratchet breaks.
 
-**Name the blast radius, don't gesture at it.** "Touches auth, billing, and the public API contract" is useful. "This may take some effort" is not.
+**Trust the oracle, not the agent.** "Better" means a hard-to-game correctness gate still passes on inputs the agent didn't see — not the agent's say-so.
 
-**Separate "good idea" from "cheap idea."** A recommendation can be strategically right and operationally expensive. Say both.
+**A win inside the noise is not a win.** Require improvement beyond measured variance. Otherwise a random walk masquerades as progress.
 
-**Always check reversibility.** Can it be piloted behind a flag, adapter, or abstraction first? If yes, that is the safer path.
+**Free — and hard — revert is the whole point.** Every iteration starts from a known-good snapshot, so a bad mutation costs nothing. The revert is *hard*: the model never sees the rejected state again, so it can't accumulate knowledge of rejected paths and learn to game the judge over many tries.
 
-**Don't manufacture drama.** Accurate warning, not constant alarm. If the change is genuinely local and reversible, say so in one line and move on.
+**Measure honestly or not at all.** Warmup, repeat, median, report spread. Single-run milliseconds lie.
 
-**Count the hidden follow-on work.** Migration scripts, test rewrites, rollout sequencing, backward-compat shims, observability, customer comms, docs — these are part of the size.
+**Guard against overfit.** Hold out a second eval the loop never optimizes against, and validate the final winner on it.
 
-**Flag missing facts instead of guessing.** If you can't size it, say what you'd need rather than faking confidence.
+**Bound it up front, stop on diminishing returns.** Fixed budget; halt when wins dry up. The tail of the search is where cost outruns value.
+
+**Don't optimize the unmeasurable — but offer to make it measurable.** No scalar, no loop. Before falling back to a review, offer a one-shot proxy: *"If you can define a proxy — cyclomatic complexity ≤ 5, no function over 20 lines, tests at 100% — I can run a constrained loop."* That converts many "make it cleaner" requests into good fits instead of a flat refusal.
 
 ## Examples
 
-### Small change — correctly not alarmed
+### Good fit — hot parser path
 
-**TL;DR:** ✅ **Small** — adds a nullable column and one read path; isolated and easy to roll back.
+**Metric:** median ms to parse over a freshly generated 10k-payload batch (warmup + 20 runs).
+**Oracle:** differential test — output must match a frozen reference parser on randomized inputs each run.
+**Budget:** 8 iterations or 10 minutes, whichever first; stop after 3 flat rounds.
+**Why it works:** real number, cheap to repeat, and a cheated parser fails the differential check immediately. Return with "143ms → 91ms (±4ms), 36% faster" — and it's true.
 
-**Reversibility:** Easy — additive migration, no consumer changes; drop the column to revert.
+### Bad fit — "make the FSM more DRY"
 
-**Do next:** Ship through the existing migration flow; no special rollout needed.
+**Verdict:** don't run the loop. "DRY" is not a scalar and has no correctness oracle, so the agent would optimize toward whatever it can game.
+**Instead:** either convert to a measurable proxy (cyclomatic complexity or LOC, with the existing test suite as the oracle) and then run the loop — or just do a normal refactor review. Say which, and why.
 
-### Major refactor — sounds smaller than it is
+### Good fit — prompt / eval tuning
 
-**TL;DR:** ⚠️ **Major** — moves core business logic across a service boundary, affecting every existing integration. Extract behind an adapter inside the monolith first.
-
-**Change level:** Major — logic crosses a service boundary and changes its ownership, not just its location.
-
-**Blast radius:** Hook-based integrations need rewiring; in-process callers must handle network failure; testing, deploy, and on-call all change once logic lives behind an API.
-
-**Reversibility:** One-way door — once multiple consumers depend on the new API shape, reversing is expensive.
-
-**Safer path:** Build an internal service layer inside the monolith, then extract one bounded workflow behind an adapter.
-
-**Do next:** Prove the seam on a single workflow before touching every hook.
+**Metric:** pass-rate on a held-out eval set.
+**Oracle:** the eval itself, scored on inputs not shown to the optimizer.
+**Guard:** keep a *second* eval split the loop never touches; the reported gain is only trustworthy if it survives that split. This is the case where overfit is most seductive and the held-out check matters most.
 
 ## What success looks like
 
-The operator scans the response and within seconds knows whether this is a quick tweak, a bounded project, or a big commitment to treat with caution — and if it is expensive or hard to reverse, they can't miss it. If they read only the TL;DR, they still got the warning.
+The operator gets one of two honest outcomes: a change that is **repeatably, verifiably better** against a correctness gate that's hard to cheat — reported with its real number and spread — or a clear **"no real improvement found within budget."** What they never get is a faster-looking number backed by a gamed oracle or hidden in measurement noise. And when the problem was never measurable to begin with, the skill said so before burning a single iteration.
