@@ -1,18 +1,6 @@
 ---
 name: auto-improve
-description: >
-  The EXECUTOR of the optimization pair: run a bounded, self-verifying loop that
-  measurably improves a single file, only AFTER a measurable contract already exists.
-  Fire when a scalar metric, a strong correctness oracle, and a fixed budget are
-  ALREADY defined — typically handed off by baseline-spec, or when the user says they
-  have a benchmark/eval and a baseline — or when the user explicitly invokes the loop:
-  "run the auto-improve loop," "let it iterate until it's faster," "hill-climb this,"
-  "auto-tune against my benchmark," "Karpathy-style optimization loop." For a cold-start
-  request that has NOT yet named a number, gate, and stop — "optimize this," "make it
-  faster," "make it cleaner," "tune this prompt" — do NOT run this loop; defer to
-  baseline-spec to define the contract first. Re-gate on the three preconditions before
-  every run; if any is missing, refuse and name it. Skip entirely when the goal is
-  subjective with no number behind it.
+description: "The EXECUTOR of the optimization pair: run a bounded, self-verifying loop that measurably improves a single file, only AFTER a measurable contract already exists. Fire when a scalar metric, a strong correctness oracle, and a fixed budget are ALREADY defined — typically handed off by baseline-spec, or when the user says they have a benchmark/eval and a baseline — or when the user explicitly invokes the loop: 'run the auto-improve loop,' 'let it iterate until it's faster,' 'hill-climb this,' 'auto-tune against my benchmark,' 'Karpathy-style optimization loop.' For a cold-start request that has NOT yet named a number, gate, and stop — 'optimize this,' 'make it faster,' 'make it cleaner,' 'tune this prompt' — do NOT run this loop; defer to baseline-spec to define the contract first. Re-gate on the three preconditions before every run; if any is missing, refuse and name it. Skip entirely when the goal is subjective with no number behind it."
 ---
 
 # Auto-Improve
@@ -21,13 +9,15 @@ Turn optimization into a verifiable, ratcheted search — and know when not to.
 
 The appealing idea — point an agent at a file, let it mutate-measure-keep-or-revert until the code is faster — is real for a narrow class of problems and pure hype for the rest. What separates the two is not the loop. It's whether you can **measure the result honestly** and **catch a cheated win**. This skill enforces that, and refuses the loop when you can't. Most real-world code lacks a trustworthy oracle, so expect this skill to refuse more often than it runs — that is the design, not a shortfall.
 
+**Bundled resources** (read on demand, not by default): [README.md](README.md) for the Karpathy `autoresearch` origin, the useful-vs-hype framing, and cost expectations; [FAQS.md](FAQS.md) for operator guidance — especially non-code use (prose, copy, prompts), oracle-strength litmus tests, and the high-stakes-text disclaimer. Read FAQS.md whenever the target is not code.
+
 ## Core idea
 
 The LLM *proposes* changes; the harness *decides* whether to keep them. A change survives only if a strong correctness gate still passes on fresh inputs **and** a cheap, repeatable metric improves beyond measurement noise. Every rejected change is reverted mechanically, for free. Done right, you return to code that is empirically, repeatably better — with an honest number — or to a clear "no real improvement found." You never ship a gamed or noise-driven win.
 
 ## Gate first — three preconditions
 
-Run the loop **only** when all three hold. If any fails, stop and say which one — that refusal is the skill working, not failing. Defining these three (and capturing the baseline) is the job of the companion [baseline-spec](../baseline-spec/SKILL.md) skill; this skill assumes they exist and executes.
+Run the loop **only** when all three hold. If any fails, stop and say which one — that refusal is the skill working, not failing. Defining these three (and capturing the baseline) is the job of the companion **baseline-spec** skill (sibling skill `baseline-spec`; in the repo at `../baseline-spec/SKILL.md`); this skill assumes they exist and executes. If baseline-spec is not installed, define the three pillars with the user directly before running.
 
 1. **A scalar metric.** One number, cheap and repeatable to measure: median latency, peak memory, bundle bytes, token count, throughput, eval pass-rate. If the goal is "cleaner" or "more DRY," there is no gradient to climb — convert it to a real metric (LOC, cyclomatic complexity, a passing test count) or do a normal review instead.
 2. **A strong oracle.** A correctness check the optimizer cannot cheaply game — randomized/held-out inputs, property-based or metamorphic tests, or differential comparison against a frozen reference implementation. Litmus test: *if gaming the oracle is easier than satisfying it, stop.* A weak oracle doesn't produce faster code; it produces subtly broken code that scores well. **Weak oracle, concretely:** a fixed set of five inputs the optimizer can read, memorize, and special-case — it will. The harder the domain (e.g. verifying a React component's render output), the more you need *generated* inputs plus metamorphic relations, not a hand-picked fixture. Constructing the oracle is usually the hardest part of the whole setup; don't overestimate the suite you already have.
@@ -43,12 +33,12 @@ Run the loop **only** when all three hold. If any fails, stop and say which one 
 
 ## The loop
 
-1. **Baseline.** Run the judge K times; record the median and its spread.
+1. **Baseline.** Run the judge K times (default K=5); record the median and its spread.
 2. **Snapshot the target only.** Copy the single target file aside (e.g. `cp target target.bak`), or rely on the dedicated worktree/branch. Snapshot *only the file under optimization* — never `git stash` the whole repo — so revert is mechanical *and* can't disturb the rest of your tree.
 3. **One change.** Make a single targeted edit to the target only — so every accept/reject is attributable to one cause.
 4. **Re-judge.** Reject if correctness fails, if it's slower, **or if the gain doesn't clear the noise band** — concretely, require the improvement to exceed **2× the baseline's median absolute deviation (MAD)**. Fix that threshold once, up front; never loosen it mid-run to rescue a change.
-5. **Commit or revert.** On accept, keep the change and update the baseline. On reject, restore the target from its snapshot (`mv target.bak target`) — touching nothing else.
-6. **Repeat** until the budget is spent or M consecutive iterations yield no real improvement. **Escape hatch:** if the loop stalls after M flat rounds, permit *one* paired mutation — up to two coordinated edits that only pay off together (e.g. inlining + loop interchange) — under the exact same gate. Some wins are unreachable one line at a time; don't let the single-change rule halt the search prematurely.
+5. **Commit or revert.** On accept, keep the change and update the baseline — both the median *and* its spread, so the noise band tracks the current code. On reject, restore the target from its snapshot (`mv target.bak target`) — touching nothing else.
+6. **Repeat** until the budget is spent or M consecutive iterations yield no real improvement. **Escape hatch:** if the loop stalls after M flat rounds, permit *one* paired mutation — up to two coordinated edits that only pay off together (e.g. inlining + loop interchange) — under the exact same gate. The escape hatch fires once per run: if the paired mutation also fails to clear the gate, end the run. Some wins are unreachable one line at a time; don't let the single-change rule halt the search prematurely.
 7. **Validate the winner.** Re-run the final version against a *second held-out eval the agent never saw* to catch benchmark overfit. For prompt/eval tuning especially, make this a **different, truly blind metric** — not just another split of the same eval format — because an optimizer that sees the judge repeatedly can meta-overfit its scoring quirks, not only its inputs.
 8. **Report honestly:** start → end metric, % gain, the spread (so the gain is credible), and what actually changed.
 
