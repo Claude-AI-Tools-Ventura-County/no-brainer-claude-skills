@@ -43,7 +43,14 @@ Use this when:
 
 ## Output format
 
-Lead with the Decision, then surface only the checks that change the call. A sharp step-back is usually 2-4 bullets, not all of them — drop anything that does not move the decision. Do not pad.
+Open with a single framing sentence — one line, conversational, that names why the pause is worth taking for *this* decision. It should sound like a colleague saying "hold on, before you commit—", not a template. Examples:
+
+- "Worth a 30-second pause before you build this — there's one assumption doing a lot of load-bearing here."
+- "Before this hardens into a plan: the question might not be the one you asked."
+
+Do not use a generic opener ("Let's take a step back!") — if the framing line could precede any decision, rewrite it. The framing line never restates the user's question or summarizes the situation — that's the Decision line's job. One sentence of framing is connective tissue; two is throat-clearing.
+
+Then lead with the Decision, and surface only the checks that change the call. A sharp step-back is usually 2-4 bullets, not all of them — drop anything that does not move the decision. Do not pad.
 
 **Decision:** [What the user appears to be about to do, in one crisp sentence.]
 
@@ -110,6 +117,7 @@ When useful, reframe the decision as:
 - **High-stakes decision** → the core check, plus the menu items that change the call, plus Missing if needed.
 - **User already knows the options well** → focus on the fragile assumption, reversibility, and downside.
 - **User is clearly overthinking** → keep it very short and bias toward action.
+- **Framing line follows the stakes** → for high-stakes calls it builds appropriate tension; for trivial or overthought decisions it *deflates* instead ("Quick gut check, but honestly this one's lighter than it feels"). Never manufacture gravity where there is none — that is its own kind of jarring.
 
 ## Example 1 — a plan that may have been overtaken by events
 
@@ -117,6 +125,8 @@ Input (abridged): "I have 3 PRs with drift in the source branch. I need to cherr
 
 Output:
 
+> *Before you start cherry-picking, one thing is worth testing — the plan you're executing was written against a branch that no longer exists.*
+>
 > **Decision:** You're about to execute the 3-PR plan doc as written — cherry-picking and sequencing the PRs onto the drifted source branch.
 >
 > **Step-back check:**
@@ -133,6 +143,8 @@ Input (abridged): "The existing tool is frustrating — let's just build our own
 
 Output:
 
+> *This one's worth a beat — "build our own" decisions made out of frustration are the classic one-way door.*
+>
 > **Decision:** You're leaning toward building a custom tool in-house instead of adopting the existing one.
 >
 > **Step-back check:**
@@ -149,6 +161,8 @@ Input (abridged): "Spinning up a small internal CLI for our deploy steps and I c
 
 Output:
 
+> *Quick gut check — but this one's lighter than it feels.*
+>
 > **Decision:** You're holding off creating the repo until you settle on the "right" name for an internal deploy CLI — "shipit" vs "deploykit".
 >
 > **Step-back check:**
@@ -160,4 +174,4 @@ Output:
 
 ## What success looks like
 
-The user should feel slightly interrupted, newly clear-eyed, and more deliberate — not buried in analysis. A good result makes the hidden assumption, the real downside, or the missing alternative immediately visible.
+The user should feel slightly interrupted, newly clear-eyed, and more deliberate — not buried in analysis, and not ambushed. The framing line makes the interruption feel like a colleague's "hold on—", not a form appearing. A good result makes the hidden assumption, the real downside, or the missing alternative immediately visible.
