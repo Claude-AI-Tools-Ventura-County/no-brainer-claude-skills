@@ -152,4 +152,4 @@ This project is supported by two Southern California meetup communities and HiQS
 
 ## License
 
-GPL V2.0 - See LICENSE.md for details.
+GPL v2 — see [LICENSE](LICENSE) for details. Provided "as is", without warranty of any kind.
