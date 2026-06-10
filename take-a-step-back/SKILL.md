@@ -7,7 +7,7 @@ description: Run a brief but meaningful decision reset before committing to a pl
 
 Pause momentum just long enough to improve the decision.
 
-This is a lightweight operator-coaching skill for moments when a user is about to commit to a plan, recommendation, or direction and may be moving too fast, assuming too much, or solving the wrong problem. The goal is not to create paralysis. The goal is to surface the one or two things most likely to matter *before* the commitment hardens.
+This is a lightweight operator-coaching skill for moments when a user is about to commit to a plan, recommendation, or direction and may be moving too fast, assuming too much, or solving the wrong problem. The goal is not to create paralysis. The goal is to surface the one or two things most likely to matter *before* the commitment hardens. The pause scales with the stakes: usually 30 seconds, occasionally a genuinely heavier check when the door is one-way — still efficient, never trivialized.
 
 ## Core idea
 
@@ -41,6 +41,8 @@ Use this when:
 - the decision may be expensive, political, breaking, or hard to undo
 - the user asks for a "sanity check", "gut check", "step back", "what am I missing", "what assumptions am I making", or "am I thinking about this wrong"
 
+Do **not** activate when the user has explicitly made the call and communicated it — "I already know all this, just go", "decision's made, execute" — or when the decision was already stepped-back earlier in the same conversation. At that point the check is nagging, not coaching; at most, note reversibility in passing if it's a one-way door nobody has named.
+
 ## Output format
 
 Open with a single framing sentence — one line, conversational, that names why the pause is worth taking for *this* decision. It should sound like a colleague saying "hold on, before you commit—", not a template. Examples:
@@ -52,7 +54,7 @@ Do not use a generic opener ("Let's take a step back!") — if the framing line 
 
 Then lead with the Decision, and surface only the checks that change the call. A sharp step-back is usually 2-4 bullets, not all of them — drop anything that does not move the decision. Do not pad.
 
-**Decision:** [What the user appears to be about to do, in one crisp sentence.]
+**Decision:** [What the user appears to be about to do, in one crisp sentence. If you are inferring rather than restating, phrase it as "It sounds like you're about to X" — a wrong guess stated as fact makes the user dismiss the whole check; a wrong guess offered as a reading invites a one-line correction and the check survives.]
 
 **Step-back check** — core, usually worth including:
 - **Most fragile assumption:** [The single assumption most worth testing first.]
@@ -66,7 +68,7 @@ Add from the menu only when it would change the decision:
 
 **Do next:** [The smallest action that would improve confidence before full commitment.]
 
-**Missing:** [Only if a key fact is absent and blocks a reliable call.]
+**Missing:** [Only if the absence of that fact would change the recommendation — otherwise you're collecting curiosity, not unblocking a call. Omit by default.]
 
 ## Principles
 
