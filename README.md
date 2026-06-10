@@ -179,6 +179,10 @@ Lessons baked into these files. Keep them if you add more skills:
 │   ├── README.md
 │   └── FAQS.md
 ├── record-decision/SKILL.md      # The ledger — record → revisit
+├── snapshot/SKILL.md             # Session recovery
+├── utils/                        # Standalone tooling — not part of the suite
+│   ├── README.md
+│   └── read-only/SKILL.md        # Pre-approve read-only permissions
 └── README.md
 ```
 
