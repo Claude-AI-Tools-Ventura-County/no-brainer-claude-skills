@@ -2,9 +2,9 @@
 
 <img width="1941" height="1058" alt="giant-brains-02" src="https://github.com/user-attachments/assets/d5a0e02b-eec2-4026-b83e-cf725def5942" />
 
-Seven Claude Code skills that catch you at the moment of a decision — and again when you're improving something — and force a short, honest answer you can act on in seconds.
+Eight Claude Code skills that catch you at the moment of a decision — and again when you're improving something — and force a short, honest answer you can act on in seconds.
 
-**New here?** Jump to [Install](#install) — a symlink loop puts all seven in Claude Code in under a minute.
+**New here?** Jump to [Install](#install) — a symlink loop puts all eight in Claude Code in under a minute.
 
 ## About
 
@@ -17,6 +17,7 @@ A suite of skills for [Claude Code](https://claude.com/claude-code) that bring h
 - **A shared reversibility read.** The decision skills speak one vocabulary — **Easy / Costly / One-way door** — so a cheap two-way door never gets treated like a commitment that's expensive to unwind.
 - **Honest signal, not constant alarm.** They stay quiet when a change is small and reversible, and refuse rather than fake a verdict they can't stand behind. Calibration is as much about declining as raising a flag.
 - **Improvement you can prove.** Act II turns "make it better" into a metric, an un-gameable oracle, and a baseline, then runs a self-verifying loop that returns a real, numbered win — or a clean "no gain found."
+- **A paper trail that outlives the chat.** The decision, the bet it rides on, and a revisit date get written to the repo at commit time — so six months later, "why is it built this way?" has an answer.
 
 ## When to reach for it
 
@@ -26,6 +27,7 @@ A suite of skills for [Claude Code](https://claude.com/claude-code) that bring h
 - **An agent handed you a wall of options** and you just need the call — [bottom-line](bottom-line/SKILL.md).
 - **An agent gave you scattered steps or a verbose completion message** and you need the execution sequence — [linear](linear/SKILL.md).
 - **You told an agent "make this faster"** but can't tell whether it actually did — [baseline-spec](baseline-spec/SKILL.md) to define what "better" means, then [auto-improve](auto-improve/SKILL.md) to prove it.
+- **You just made a call that's expensive to unwind** and want the bet written down before it evaporates — [record-decision](record-decision/SKILL.md).
 
 ## Act I — Deciding well (decision hygiene)
 
@@ -63,9 +65,21 @@ These **chain** too: **define** the measurable contract, then **improve** agains
 
 The two acts join end to end: decide *whether and what* (Act I), sequence the work ([linear](linear/SKILL.md)), then *prove the improvement* (Act II).
 
+## The ledger — remembering why
+
+Every skill above produces a sharp one-shot verdict — and then the verdict evaporates when the chat ends. One skill makes them durable.
+
+| Skill | The operator's question | Its job |
+|---|---|---|
+| [record-decision](record-decision/SKILL.md) | "We made the call — what did we bet on, and when will we know we were right?" | **Record** — write the bet to the repo at commit time, close the loop when reality reports back |
+
+[record-decision](record-decision/SKILL.md) is the suite's memory. At commit time it writes the decision to a dated file — the call, the fragile assumption it rides on, the expected signal with a by-when, the reversibility read, and a revisit trigger — then keeps the record *and* the project docs current as findings arrive. It's mostly a receiver: take-a-step-back's fragile assumption becomes the bet, blast-radius's verdict becomes the reversibility line, baseline-spec's metric becomes the expected signal. The records carry machine-readable frontmatter, so "find every Costly decision not yet Validated" is one query, and a date-based revisit trigger can become a `/schedule` appointment instead of a hope.
+
+It is deliberately **not** Claude's memory (`MEMORY.md` / `CLAUDE.md`): memory is operator-private and about *how Claude should work with you*; decision records live in git, address the whole team — humans and future agents — and answer *why the system is shaped this way*. The skill file carries the full comparison.
+
 ## What they share
 
-- **Short, structured output.** Every skill leads with the one line that must survive skimming, then adds only the fields that change the call. Drop anything that doesn't; never pad the template. `baseline-spec` follows the same one-shot, scannable shape as the four decision skills; `linear`'s output *is* the structure — one numbered list, nothing actionable outside it; `auto-improve` is the lone exception — it *executes* a loop rather than emitting a verdict, but still leads with an honest headline number.
+- **Short, structured output.** Every skill leads with the one line that must survive skimming, then adds only the fields that change the call. Drop anything that doesn't; never pad the template. `baseline-spec` follows the same one-shot, scannable shape as the four decision skills; `linear`'s output *is* the structure — one numbered list, nothing actionable outside it; `record-decision` writes the same scannable shape to a file instead of the chat; `auto-improve` is the lone exception — it *executes* a loop rather than emitting a verdict, but still leads with an honest headline number.
 - **A shared reversibility read.** Where it applies, the skills speak one vocabulary — **Easy / Costly / One-way door** — so a two-way door is treated differently from a commitment that is expensive to unwind. (Iron-triangle's version asks whether a sacrificed corner stays *contained* or *compounds*.)
 - **Refuse rather than fake it.** Accurate signal over constant alarm. The decision skills stay quiet when a change is small and reversible; `baseline-spec` refuses to optimize a goal it can't measure; `auto-improve` rejects any "win" that's gamed or lost in the noise. Calibration is as much about declining as raising a flag.
 
@@ -117,7 +131,7 @@ The web app and desktop app share one flow: enable code execution, then upload e
 1. **Enable execution.** Open **Settings > Capabilities** and turn on **Code execution and file creation**. (Available on Free, Pro, Max, Team, and Enterprise plans. On Team/Enterprise, an owner must first enable it under **Organization settings > Skills**.)
 2. **Zip each skill folder** — one ZIP per skill, each with a `SKILL.md` at its root. Run from the repo root:
    ```bash
-   for s in take-a-step-back iron-triangle blast-radius bottom-line linear baseline-spec auto-improve; do
+   for s in take-a-step-back iron-triangle blast-radius bottom-line linear baseline-spec auto-improve record-decision; do
      (cd "$s" && zip -rX "../$s.zip" . -x '.*')
    done
    ```
@@ -132,7 +146,7 @@ Put each skill directory where Claude Code looks for skills — **personal (all 
 
 ```bash
 mkdir -p "$HOME/.claude/skills"
-for s in blast-radius bottom-line linear iron-triangle take-a-step-back baseline-spec auto-improve; do
+for s in blast-radius bottom-line linear iron-triangle take-a-step-back baseline-spec auto-improve record-decision; do
   ln -s "$PWD/$s" "$HOME/.claude/skills/$s"
 done
 ```
@@ -164,6 +178,7 @@ Lessons baked into these files. Keep them if you add more skills:
 │   ├── SKILL.md
 │   ├── README.md
 │   └── FAQS.md
+├── record-decision/SKILL.md      # The ledger — record → revisit
 └── README.md
 ```
 
