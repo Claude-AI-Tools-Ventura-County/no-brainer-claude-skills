@@ -23,7 +23,7 @@ Decisions evaporate. The framing, the tradeoff, the fragile assumption — all e
 
 ## Core idea
 
-You are recording, not re-deciding. Pull the decision, the bet, and the reversibility read from what's already in the conversation — often directly from another skill's output (take-a-step-back's *most fragile assumption* becomes **The bet**; blast-radius's verdict becomes **Reversibility**; baseline-spec's metric becomes **Expected signal**). If a field is genuinely unknown, write `Unknown — [what would pin it down]` rather than faking it.
+You are recording, not re-deciding. Pull the decision, the bet, and the reversibility read from what's already in the conversation — often directly from another skill's output (take-a-step-back's *most fragile assumption* becomes **The bet**; blast-radius's verdict becomes **Reversibility**; baseline-spec's metric becomes **Expected signal**). If a field is genuinely unknown, write `Unknown — [what would pin it down]` rather than faking it. This doubles as the quick-record path: a record filed at commit time with `Unknown` fields beats a complete record that never gets written — fill the gaps later via Updates.
 
 ## Where records live
 
@@ -41,6 +41,7 @@ date: YYYY-MM-DD
 reversibility: Costly      # Easy | Costly | One-way-door
 revisit: YYYY-MM-DD        # or a metric condition: "p95 > 200ms for 7d"
 related: []                # optional: paths to superseded, superseding, or dependent records
+decider: "@handle"         # optional: who owns the call (the DRI) — matters in team repos
 ---
 
 # [Decision title — the call, not the topic]
@@ -49,7 +50,9 @@ related: []                # optional: paths to superseded, superseding, or depe
 
 **The bet:** [the assumption this rides on — the thing that, if wrong, unwinds the decision]
 
-**Expected signal:** [the observable result that says the bet paid off] — by [date]
+**Rejected:** [the losing alternative — and the one-line reason it lost. Optional; include for Costly / One-way-door records, where re-deriving the decision boundary later would be expensive]
+
+**Expected signal:** [the observable result that says the bet paid off] — by [date] or on [event: "when the v1 API deprecates"]
 
 **Reversibility:** Easy | Costly | One-way door — [why, one line]
 
@@ -67,7 +70,7 @@ Treat **status** as a strict finite state machine: `Decided` → `Validated` (si
 
 1. Fill the template from the conversation. Don't pad; don't invent.
 2. Write the file to the decisions directory.
-3. **Propagate to project docs.** Sweep the docs that state the affected approach — README, plan/spec docs, CLAUDE.md — and update any that now contradict the decision. The doc carries the *current state*; the *why* lives in the record. Link back with one line: `Decided in [decisions/2026-06-09-self-hosted-postgres.md]`. Never paste the full record into a doc — one source of truth. The link-back line is also the sweep convention: `grep -r "decisions/"` across the project docs finds every doc bound to a record, so future propagation is mechanical, not diligence-dependent.
+3. **Propagate to project docs.** Sweep the docs that state the affected approach — README, plan/spec docs, CLAUDE.md — and update any that now contradict the decision. The doc carries the *current state*; the *why* lives in the record. Link back with one line: `Decided in [decisions/2026-06-09-self-hosted-postgres.md]`. Never paste the full record into a doc — one source of truth. The link-back line is also the sweep convention: `grep -r "decisions/"` across the project docs finds every doc bound to a record, so future propagation is mechanical, not diligence-dependent. If a full sweep isn't feasible right now, the floor is a `## Decisions` section in the README linking to the decisions directory — a findable index beats silently stale docs.
 4. Report which files were written and touched.
 5. If the revisit trigger is a date and you're in Claude Code, offer `/schedule` so the revisit is an appointment, not a hope.
 
@@ -96,7 +99,7 @@ Rule of thumb: if a new teammate (human or agent) would need it to understand *w
 
 ## When NOT to record
 
-A choice with no real bet gets no file. "We went with the linter's default quote style" — Easy to reverse, no assumption at risk, no expected signal worth tracking. Recording it would bury the decisions that matter under ones that don't. The threshold: there's an assumption that could be wrong, or the reversibility is Costly or a One-way door. When below threshold, say so in one line and move on.
+A choice with no real bet gets no file. "We went with the linter's default quote style" — Easy to reverse, no assumption at risk, no expected signal worth tracking. Recording it would bury the decisions that matter under ones that don't. The threshold: there's an assumption that could be wrong, or the reversibility is Costly or a One-way door. When the Easy/Costly line feels fuzzy in the moment, use this tiebreaker: **if undoing it would cost more than a day of focused work, record it.** When below threshold, say so in one line and move on.
 
 ## Example
 
