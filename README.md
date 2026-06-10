@@ -4,6 +4,8 @@
 
 Seven Claude Code skills that catch you at the moment of a decision — and again when you're improving something — and force a short, honest answer you can act on in seconds.
 
+**New here?** Jump to [Install](#install) — a symlink loop puts all seven in Claude Code in under a minute.
+
 ## About
 
 A suite of skills for [Claude Code](https://claude.com/claude-code) that bring hygiene to the whole life of getting something better — first **deciding well**, then **improving it verifiably**. Each fires at a different moment and forces the response into a short, scannable shape — so a human operator can act fast without missing what matters. The throughline: *make the implicit explicit, lead with the line that survives skimming, and refuse rather than fake it.*
@@ -12,7 +14,7 @@ A suite of skills for [Claude Code](https://claude.com/claude-code) that bring h
 
 - **Faster calls, fewer blind spots.** Every answer leads with the one line that must survive skimming, then adds only the fields that change the decision — no wall of text to wade through.
 - **Hidden tradeoffs made explicit.** The cost you're actually paying — the corner you're sacrificing, the assumption you're betting on, the blast radius of the path you picked — gets named out loud *before* you commit.
-- **A shared reversibility read.** Every skill speaks one vocabulary — **Easy / Costly / One-way door** — so a cheap two-way door never gets treated like a commitment that's expensive to unwind.
+- **A shared reversibility read.** The decision skills speak one vocabulary — **Easy / Costly / One-way door** — so a cheap two-way door never gets treated like a commitment that's expensive to unwind.
 - **Honest signal, not constant alarm.** They stay quiet when a change is small and reversible, and refuse rather than fake a verdict they can't stand behind. Calibration is as much about declining as raising a flag.
 - **Improvement you can prove.** Act II turns "make it better" into a metric, an un-gameable oracle, and a baseline, then runs a self-verifying loop that returns a real, numbered win — or a clean "no gain found."
 
@@ -35,9 +37,18 @@ Four skills that fire around a decision, each answering a different question at 
 | [iron-triangle](iron-triangle/SKILL.md) | "Which of speed, cost, or quality am I trading away?" | **Price** — make the implicit tradeoff explicit |
 | [blast-radius](blast-radius/SKILL.md) | "How big is the path I chose, what breaks, how hard to undo?" | **Size** — measure cost and reversibility of a chosen path |
 | [bottom-line](bottom-line/SKILL.md) | "There's too much here — what's the call?" | **Cut** — compress overload and analysis paralysis into a decision |
+
+They **chain** along the life of a decision: **frame** it (should I, and is this the right problem?), **price** the tradeoff (which corner gives?), **size** the chosen path (how big, what breaks?), then **cut** to the bottom line when the analysis balloons. The same situation can touch all four precisely because they answer different questions at different moments.
+
+## The bridge — from deciding to doing
+
+Once the call is made, one skill turns it into motion.
+
+| Skill | The operator's question | Its job |
+|---|---|---|
 | [linear](linear/SKILL.md) | "The steps are scattered — what's the execution order?" | **Sequence** — extract and order procedural steps into one top-to-bottom plan |
 
-They **chain** along the life of a decision: **frame** it (should I, and is this the right problem?), **price** the tradeoff (which corner gives?), **size** the chosen path (how big, what breaks?), then **cut** to the bottom line when the analysis balloons, then **sequence** the resulting action into an executable plan. `bottom-line` and `linear` are natural handoffs — one resolves the decision, the other orders the execution. The same situation can touch all five precisely because they answer different questions at different moments.
+[linear](linear/SKILL.md) is not a decision skill — it fires once a call exists and the *doing* is scattered. It's the natural handoff from `bottom-line` (decision made → ordered plan), but it earns its keep anywhere steps hide in prose: a verbose how-to from an agent mid-project, or a completion message at the tail end whose remaining work is smeared across "what I didn't do," "open items," and "next steps." Whenever someone must execute three or more steps, linear collapses them into one numbered, top-to-bottom plan — branches as sub-bullets, verification inline, nothing actionable after the list.
 
 ## Act II — Improving verifiably (measure, then optimize)
 
@@ -50,11 +61,11 @@ Once you've decided to make something concretely better, a second pair carries i
 
 These **chain** too: **define** the measurable contract, then **improve** against it. The routing is deliberately one-directional — a cold-start request like *"optimize this"* belongs to [baseline-spec](baseline-spec/SKILL.md) (the **definer**), which fires first; [auto-improve](auto-improve/SKILL.md) (the **executor**) defers any undefined request back to it and only runs once a metric, an un-gameable oracle, and a budget already exist. baseline-spec refuses to optimize a goal it can't measure — exactly the Act I instinct of *refuse rather than fake it* — and hands off to auto-improve once the three pillars are locked. auto-improve is the suite's one **executional** skill: instead of emitting a verdict, it runs a ratcheted mutate-measure-keep-or-revert search and returns either a verified, numbered win or a clean "no real improvement found." See its [README](auto-improve/README.md) and [operator FAQ](auto-improve/FAQS.md).
 
-The two acts join end to end: decide *whether and what* (Act I), then *prove the improvement* (Act II).
+The two acts join end to end: decide *whether and what* (Act I), sequence the work ([linear](linear/SKILL.md)), then *prove the improvement* (Act II).
 
 ## What they share
 
-- **Short, structured output.** Every skill leads with the one line that must survive skimming, then adds only the fields that change the call. Drop anything that doesn't; never pad the template. `baseline-spec` follows the same one-shot, scannable shape as the four decision skills; `auto-improve` is the lone exception — it *executes* a loop rather than emitting a verdict, but still leads with an honest headline number.
+- **Short, structured output.** Every skill leads with the one line that must survive skimming, then adds only the fields that change the call. Drop anything that doesn't; never pad the template. `baseline-spec` follows the same one-shot, scannable shape as the four decision skills; `linear`'s output *is* the structure — one numbered list, nothing actionable outside it; `auto-improve` is the lone exception — it *executes* a loop rather than emitting a verdict, but still leads with an honest headline number.
 - **A shared reversibility read.** Where it applies, the skills speak one vocabulary — **Easy / Costly / One-way door** — so a two-way door is treated differently from a commitment that is expensive to unwind. (Iron-triangle's version asks whether a sacrificed corner stays *contained* or *compounds*.)
 - **Refuse rather than fake it.** Accurate signal over constant alarm. The decision skills stay quiet when a change is small and reversible; `baseline-spec` refuses to optimize a goal it can't measure; `auto-improve` rejects any "win" that's gamed or lost in the noise. Calibration is as much about declining as raising a flag.
 
@@ -78,6 +89,22 @@ What makes it good:
 - **A do-next that reduces uncertainty** rather than describing it.
 
 The inverse matters just as much: a good skill also knows when *not* to escalate. See `blast-radius`'s small-change example, where the right answer is "ship it, low risk" — calibration is as much about staying quiet as raising a flag.
+
+The compression skills earn their keep on the *delta* — what goes in versus what comes out. From `linear`:
+
+> **In:** "To get this working you'll first want to install the CLI, which you can do with npm. Then there's some configuration to think about — the config file lives at ~/.toolrc and needs your API key. Oh, and note that on Linux you may need sudo for the install. Once configured, run `tool sync` to pull data. If sync fails with a 401, your key is wrong. Finally you can run `tool build`, though if you're on the beta channel you'd use `tool build --beta` instead."
+>
+> **Out:**
+> 1. Install the CLI: `npm install -g tool`
+>    - If on Linux: prefix with `sudo` if you get a permissions error.
+> 2. Add your API key to `~/.toolrc`.
+> 3. Run `tool sync` to pull data. → expect "Sync complete"
+>    - If 401 error: API key is wrong — fix step 2 before continuing.
+> 4. Build:
+>    - Stable channel: `tool build`
+>    - Beta channel: `tool build --beta`
+
+Every detail survived — the sudo caveat, the 401 diagnosis, the beta variant — but now it executes top-to-bottom without re-reading.
 
 ## Install
 
@@ -131,7 +158,7 @@ Lessons baked into these files. Keep them if you add more skills:
 ├── iron-triangle/SKILL.md
 ├── blast-radius/SKILL.md
 ├── bottom-line/SKILL.md
-├── linear/SKILL.md
+├── linear/SKILL.md               # The bridge — decide → do
 ├── baseline-spec/SKILL.md        # Act II — measure, then optimize
 ├── auto-improve/
 │   ├── SKILL.md
