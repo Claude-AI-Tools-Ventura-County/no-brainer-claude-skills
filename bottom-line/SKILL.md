@@ -1,6 +1,20 @@
 ---
 name: bottom-line
-description: Distill long, verbose, or repetitive output — especially from Claude or other AI agents laying out options and decisions — into a short, deduplicated "bottom line" summary that surfaces the real decision, a clear recommendation, and any choice that would be hard to reverse later. Use this whenever the user pastes or points back to a wall of text and asks for the "bottom line", a "TL;DR" / "tldr", the "gist" or "takeaway", to "cut to the chase", to "summarize this cleanly", says something is "too long" / "too verbose" / "too repetitive", or asks "what do I actually need to decide here" or "is there anything here I might regret". Also trigger when prior agent output is long-winded, hedged, or repeats the same points multiple ways and the decision needs pulling out cleanly — even if the user never says the exact words "bottom line".
+description: >-
+  Distill long, verbose, or repetitive output — especially from Claude or other
+  AI agents laying out options, tradeoffs, and recommendations — into a short,
+  deduplicated "bottom line" summary that surfaces the real decision, a clear
+  recommendation, and any choice that would be hard to reverse later. Trigger
+  when the content is decision- or tradeoff-oriented: the user pastes or points
+  back to a wall of text and asks for the "bottom line", a "TL;DR" / "tldr",
+  the "gist" or "takeaway", to "cut to the chase", to "summarize this cleanly",
+  says something is "too long" / "too verbose" / "too repetitive", or asks
+  "what do I actually need to decide here" or "is there anything here I might
+  regret". Also self-trigger when prior agent output is long-winded, hedged, or
+  repeats the same points multiple ways and a decision needs pulling out cleanly
+  — even if the user never says the exact words "bottom line". Do NOT trigger
+  when the user wants procedural steps, commands, or an execution sequence —
+  that is /linear's job, not this skill's.
 ---
 
 # Bottom Line
@@ -25,7 +39,7 @@ Default to this shape. Drop any block that doesn't apply — never pad to fill t
 
 **Regret check:** [the one decision here that's hard or costly to undo, and why — plus the cheapest way to keep it reversible if there is one. "All reversible" if nothing qualifies. One line.]
 
-**Do next:** [the single most important action, one line.]
+**Do next:** [the single most important action, one line. If the next action expands to multiple steps, write "Do next: run /linear for the execution sequence" — do not list steps here.]
 
 ### Scaling
 
