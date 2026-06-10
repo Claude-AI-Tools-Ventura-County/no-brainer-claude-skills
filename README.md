@@ -2,7 +2,7 @@
 
 <img width="1941" height="1058" alt="giant-brains-02" src="https://github.com/user-attachments/assets/d5a0e02b-eec2-4026-b83e-cf725def5942" />
 
-Six Claude Code skills that catch you at the moment of a decision — and again when you're improving something — and force a short, honest answer you can act on in seconds.
+Seven Claude Code skills that catch you at the moment of a decision — and again when you're improving something — and force a short, honest answer you can act on in seconds.
 
 ## About
 
@@ -22,6 +22,7 @@ A suite of skills for [Claude Code](https://claude.com/claude-code) that bring h
 - **A deadline is squeezing you** and you need to name which of speed, cost, or quality you're actually trading away — [iron-triangle](iron-triangle/SKILL.md).
 - **You're eyeing a refactor or schema change** and need to know how far it ripples and how hard it is to undo — [blast-radius](blast-radius/SKILL.md).
 - **An agent handed you a wall of options** and you just need the call — [bottom-line](bottom-line/SKILL.md).
+- **An agent gave you scattered steps or a verbose completion message** and you need the execution sequence — [linear](linear/SKILL.md).
 - **You told an agent "make this faster"** but can't tell whether it actually did — [baseline-spec](baseline-spec/SKILL.md) to define what "better" means, then [auto-improve](auto-improve/SKILL.md) to prove it.
 
 ## Act I — Deciding well (decision hygiene)
@@ -34,8 +35,9 @@ Four skills that fire around a decision, each answering a different question at 
 | [iron-triangle](iron-triangle/SKILL.md) | "Which of speed, cost, or quality am I trading away?" | **Price** — make the implicit tradeoff explicit |
 | [blast-radius](blast-radius/SKILL.md) | "How big is the path I chose, what breaks, how hard to undo?" | **Size** — measure cost and reversibility of a chosen path |
 | [bottom-line](bottom-line/SKILL.md) | "There's too much here — what's the call?" | **Cut** — compress overload and analysis paralysis into a decision |
+| [linear](linear/SKILL.md) | "The steps are scattered — what's the execution order?" | **Sequence** — extract and order procedural steps into one top-to-bottom plan |
 
-They **chain** along the life of a decision: **frame** it (should I, and is this the right problem?), **price** the tradeoff (which corner gives?), **size** the chosen path (how big, what breaks?), then **cut** to the bottom line when the analysis balloons. The same situation can touch all four precisely because they answer different questions at different moments.
+They **chain** along the life of a decision: **frame** it (should I, and is this the right problem?), **price** the tradeoff (which corner gives?), **size** the chosen path (how big, what breaks?), then **cut** to the bottom line when the analysis balloons, then **sequence** the resulting action into an executable plan. `bottom-line` and `linear` are natural handoffs — one resolves the decision, the other orders the execution. The same situation can touch all five precisely because they answer different questions at different moments.
 
 ## Act II — Improving verifiably (measure, then optimize)
 
@@ -88,7 +90,7 @@ The web app and desktop app share one flow: enable code execution, then upload e
 1. **Enable execution.** Open **Settings > Capabilities** and turn on **Code execution and file creation**. (Available on Free, Pro, Max, Team, and Enterprise plans. On Team/Enterprise, an owner must first enable it under **Organization settings > Skills**.)
 2. **Zip each skill folder** — one ZIP per skill, each with a `SKILL.md` at its root. Run from the repo root:
    ```bash
-   for s in take-a-step-back iron-triangle blast-radius bottom-line baseline-spec auto-improve; do
+   for s in take-a-step-back iron-triangle blast-radius bottom-line linear baseline-spec auto-improve; do
      (cd "$s" && zip -rX "../$s.zip" . -x '.*')
    done
    ```
@@ -103,7 +105,7 @@ Put each skill directory where Claude Code looks for skills — **personal (all 
 
 ```bash
 mkdir -p "$HOME/.claude/skills"
-for s in blast-radius bottom-line iron-triangle take-a-step-back baseline-spec auto-improve; do
+for s in blast-radius bottom-line linear iron-triangle take-a-step-back baseline-spec auto-improve; do
   ln -s "$PWD/$s" "$HOME/.claude/skills/$s"
 done
 ```
@@ -129,6 +131,7 @@ Lessons baked into these files. Keep them if you add more skills:
 ├── iron-triangle/SKILL.md
 ├── blast-radius/SKILL.md
 ├── bottom-line/SKILL.md
+├── linear/SKILL.md
 ├── baseline-spec/SKILL.md        # Act II — measure, then optimize
 ├── auto-improve/
 │   ├── SKILL.md
