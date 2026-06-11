@@ -42,6 +42,8 @@ Most changes are small and reversible; treat them that way. Don't run the full r
 
 Frame the decision (#2), price and size it (#2–#4), cut to the call (#1), sequence the execution (#5), prove the result (#6), record the bet (#7) — and at every step, #8 decides whether the moment is big enough to bother. The skills in this repo are these same principles with triggers and output contracts attached; when a skill fires, it takes precedence over this file's ambient version.
 
+When instructions conflict: the current user message wins. Project-level instructions (this file, any repo-level config) override skill defaults. Skill definitions are the floor — they lose to both.
+
 ## Working in this repository
 
 This repo *is* the skill suite, so changes here are mostly to `SKILL.md` files and docs. Conventions that will bite you if skipped (the full list lives in [README.md](README.md#authoring-conventions)):

@@ -2,7 +2,7 @@
 name: phase-qa
 description: >
   Project plan enhancement tool. Reads a phased planning doc and appends a QA checklist
-  (DRY, SOLID, and phase-appropriate litmus tests) under each phase. Invoke before work
+  (DRY, SOLID, observability, and phase-appropriate litmus tests) under each phase. Invoke before work
   begins to bake checks into the plan; invoke mid-project or post-project to also run
   code-diff reviews on completed phases. Always confirms with the user where they are in
   the process before writing anything. Gate enforcement is at the operator's discretion.
@@ -119,7 +119,7 @@ Based on the confirmed classification, apply the appropriate behavior per phase:
 ### Upcoming phases
 Add a QA checklist block immediately after the phase heading or deliverables list. The
 checklist contains:
-- The six standard DRY/SOLID checks (always included)
+- The seven standard checks (DRY, SOLID, observability — always included)
 - Two to four phase-specific litmus tests derived from what the phase is building
 
 All items start unchecked (`- [ ]`). No code review — there is no code yet.
@@ -130,7 +130,7 @@ header to show it is in progress: `#### QA Checklist *(in progress)*` (or one le
 deeper than the phase heading, as above).
 
 ### Completed phases
-Run a targeted diff review against the same DRY/SOLID and litmus-test items that will
+Run a targeted diff review against the same standard and litmus-test items that will
 appear in the checklist (this is not a general correctness or bug review — use
 `/code-review` for that). Then add the checklist with items pre-filled:
 - Items that passed the diff review → checked (`- [x]`) with a one-line note
@@ -151,9 +151,9 @@ the checklist with all items unchecked and a note at the top:
 > Diff unavailable — manual review required before checking off items.
 ```
 
-## The standard DRY/SOLID checks (always included)
+## The standard checks (always included)
 
-These six items appear in every checklist, every phase:
+These seven items appear in every checklist, every phase:
 
 ```
 - [ ] DRY: No rule, constant, or business logic duplicated across files changed in this phase
@@ -162,6 +162,7 @@ These six items appear in every checklist, every phase:
 - [ ] L (Liskov): No subtype overrides a method to throw NotSupported or narrows the base contract
 - [ ] I (Interface Segregation): No implementer forced to stub or no-op methods it doesn't use
 - [ ] D (Dependency Inversion): High-level code depends on interfaces, not concrete classes or vendors
+- [ ] Observability: new behavior at failure boundaries (external calls, state mutations, async ops) emits a loggable or measurable signal
 ```
 
 ### Calibration — only flag real smells
@@ -171,6 +172,7 @@ These six items appear in every checklist, every phase:
   tax rate, permission boundary).
 - **SOLID:** flag only when the variation or extension it guards against already exists or
   is explicitly in the plan — not speculative future needs.
+- **Observability:** flag when new behavior crosses a boundary (external call, state mutation, async operation, error path) with no log, metric, or trace. Do not flag pure internal functions where a silent failure is not possible.
 - **For completed-phase diff reviews only:** a finding must name a concrete `file:line`
   and explain how it gets more expensive if the phase ships over it. Drop anything that
   can't clear that bar. For upcoming and in-progress phases there is no code to cite —
@@ -178,7 +180,7 @@ These six items appear in every checklist, every phase:
 
 ## Phase-specific litmus tests
 
-After the six standard items, add two to four checks tailored to what this phase is
+After the seven standard items, add two to four checks tailored to what this phase is
 actually building. Derive them from the phase's deliverables, not from a fixed template.
 Examples by phase type:
 
@@ -218,6 +220,7 @@ heading structure before inserting.
 - [ ] L (Liskov): No subtype overrides a method to throw NotSupported or narrows the base contract
 - [ ] I (Interface Segregation): No implementer forced to stub or no-op methods it doesn't use
 - [ ] D (Dependency Inversion): High-level code depends on interfaces, not concrete classes or vendors
+- [ ] Observability: new behavior at failure boundaries (external calls, state mutations, async ops) emits a loggable or measurable signal
 - [ ] [Phase-specific litmus test 1]
 - [ ] [Phase-specific litmus test 2]
 ```
@@ -258,5 +261,5 @@ items by leaving them unchecked (or adding a `~~strikethrough~~ Waived: reason` 
   user names a phase to skip at invocation, skip it with no checklist added.
 - **Mid-phase general review.** If the user wants a line-by-line bug or correctness
   review, that is `/code-review`. For completed phases this skill does run a targeted diff
-  review, but only to populate checklist items against the DRY/SOLID and litmus-test
+  review, but only to populate checklist items against the standard and litmus-test
   rubric — it does not surface general bugs or style issues.
