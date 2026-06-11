@@ -1,5 +1,5 @@
 ---
-name: phase-gate
+name: phase-qa
 description: >
   The phase-exit quality gate. Before a planned phase is marked closed, review the
   CODE that phase produced against a DRY and SOLID checklist; block closure on real
@@ -12,7 +12,7 @@ description: >
   a general line-by-line bug review use code-review instead, not this.
 ---
 
-# Phase Gate
+# Phase QA (Gate)
 
 A planned phase does not close until the code it produced clears a DRY (Don't Repeat Yourself) and SOLID checklist. Here, SOLID is applied as six concrete design checks, not as a cue for textbook architecture lectures. Catch the design debt at the boundary, where it is still **Easy** to fix — the same duplication or inverted dependency, once shipped and built upon by the next phase, becomes **Costly** to undo.
 
