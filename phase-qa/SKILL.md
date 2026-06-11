@@ -1,89 +1,169 @@
 ---
 name: phase-qa
 description: >
-  The phase-exit quality gate. Before a planned phase is marked closed, review the
-  CODE that phase produced against a DRY and SOLID checklist; block closure on real
-  violations, allow each to be cleared or waived with a one-line recorded reason, and
-  stamp the planning doc closed only when the gate passes. Fire when the user signals a
-  phase boundary: "close phase 2," "is this phase done," "mark the phase complete,"
-  "wrap up this phase," "phase exit checklist," "DRY/SOLID review before closing," or
-  finishes the last deliverable a plan lists for the current phase. Skip mid-phase, on
-  docs-only or config-only phases, and when there is no phased plan to gate against; for
-  a general line-by-line bug review use code-review instead, not this.
+  Project plan enhancement tool. Reads a phased planning doc and appends a QA checklist
+  (DRY, SOLID, and phase-appropriate litmus tests) under each phase. Invoke before work
+  begins to bake checks into the plan; invoke mid-project or post-project to also run
+  code-diff reviews on completed phases. Always confirms with the user where they are in
+  the process before writing anything. Gate enforcement is at the operator's discretion.
+  Trigger: user invokes the skill directly, optionally naming phases to skip.
 ---
 
-# Phase QA (Gate)
+# Phase QA (Plan Enhancement)
 
-A planned phase does not close until the code it produced clears a DRY (Don't Repeat Yourself) and SOLID checklist. Here, SOLID is applied as six concrete design checks, not as a cue for textbook architecture lectures. Catch the design debt at the boundary, where it is still **Easy** to fix — the same duplication or inverted dependency, once shipped and built upon by the next phase, becomes **Costly** to undo.
+This skill enhances a phased project plan by embedding a QA checklist under every phase
+before work begins — so quality expectations are explicit from the start, not bolted on
+at the end.
 
-The gate has one job: turn "I think the phase is done" into a pass/fail verdict you can defend, with a recorded reason for anything you chose to ship anyway.
+**Core idea:** each phase in the plan gets a `### QA Checklist` block added to it. The
+checklist is always checkbox format (`- [ ]`), regardless of how the rest of the plan
+doc is structured. Items get checked off as the phase's work is reviewed and approved.
+Enforcement is the operator's call — the checklist is a structured record, not a hard
+blocker.
 
-## Output format
+## Invocation
 
-Lead with the verdict. Then only the findings that block, the waiver line, and the stamp action. A clean phase is a one-line PASS plus the stamp — never pad the checklist with principles that found nothing.
+The user invokes the skill directly, e.g.:
 
-**Verdict:** [✅ PASS — clearing the gate / ⛔ BLOCKED — N open findings] — [one line: the single worst finding, or "no DRY/SOLID violations in the phase diff."]
+```
+/phase-qa
+/phase-qa skip phases 2, 4
+/phase-qa phases 1-3 only
+```
 
-**Scope reviewed:** [what code the gate looked at — e.g. `git diff phase-1-start..HEAD`, 12 files, or the phase's listed deliverables.]
+Any phases named as exceptions at invocation time are skipped entirely — no checklist
+added, no review run.
 
-**Findings:** [only if any — numbered, one line each, grouped under DRY / SOLID. Each names the file:line, the smell, and the fix. Omit the whole section on a clean pass.]
+## Step 1 — Confirm where the user is in the project
 
-**Waivers:** [only if any accepted — each finding the user chose to ship, with its one-line justification.]
+Before reading the plan or writing anything, ask:
 
-**Do next:** [⛔ → the cheapest path to green: fix list or waive. ✅ → "Stamped phase N closed in `PLAN.md`."]
+> "Where are you in the project right now? (a) haven't started yet, (b) in progress —
+> which phase are you on? (c) all phases complete."
 
-## The checklist
+The answer determines behavior for each phase (see below). Do not skip this step — the
+same plan doc looks very different depending on where the user stands.
 
-Six checks. Each is a question about the phase's diff, with the smell that answers it "fail." Apply them to the code the phase *changed*, not the whole repo.
+## Step 2 — Find the plan doc
 
-**DRY — is the same knowledge expressed in more than one place?** Not "do two lines look alike" — does one *rule* (a validation, a constant, a business calculation) live in two spots so that changing it means remembering to change both? *Smell:* the phase pasted the same tax/permission/format logic into a second handler.
+Locate the phased planning doc: the file the user names, or search for `PLAN.md`,
+`ROADMAP.md`, `docs/plan*.md`, or any doc with phase headings. If multiple candidates
+exist, ask the user which one. If no phased plan exists, tell the user plainly and
+stop — this skill requires a plan doc to write to.
 
-**S — Single Responsibility: does each unit have one reason to change?** A function or class that parses *and* validates *and* persists has three. *Smell:* a new method that, if the DB schema changes OR the wire format changes OR the business rule changes, all force an edit to the same body.
+## Step 3 — Determine status per phase
 
-**O — Open/Closed: can a new variant be added without editing existing code?** *Smell:* the phase added a case to a `switch (type)` that a reader knows will be edited again for every future type — instead of a registered handler or polymorphic call.
+Based on the user's answer in Step 1, classify each phase as **upcoming**, **in
+progress**, or **completed**. Apply the appropriate behavior:
 
-**L — Liskov: can every subtype stand in for its base without surprising the caller?** *Smell:* a subclass overrides a method to throw `NotSupported`, or narrows what the base promised, so callers must type-check before using it.
+### Upcoming phases
+Add a QA checklist block immediately after the phase heading or deliverables list. The
+checklist contains:
+- The six standard DRY/SOLID checks (always included)
+- Two to four phase-specific litmus tests derived from what the phase is building
 
-**I — Interface Segregation: are implementers forced to depend on methods they don't use?** *Smell:* the phase added a fat interface and the new implementer stubs half its methods with `throw`/`return null`.
+All items start unchecked (`- [ ]`). No code review — there is no code yet.
 
-**D — Dependency Inversion: does high-level code depend on abstractions, not concretions?** *Smell:* a service `new`s up a concrete `MySQLClient`/`StripeApi` in its constructor instead of receiving an injected interface — untestable and welded to one vendor. *This is the one that turns Costly fastest:* once three phases depend on the concrete wiring, inverting it is a cross-cutting change.
+### In-progress phase
+Treat the same as an upcoming phase: add the checklist if it isn't there yet. Note in
+the checklist header that the phase is in progress.
 
-## Calibration — the gate stays quiet unless the smell is real
+### Completed phases
+Run a code diff review for the phase, then add the checklist with items pre-filled:
+- Items that passed the diff review → checked (`- [x]`) with a one-line note
+- Items with findings → unchecked (`- [ ]`) with the finding described inline so the
+  operator can act on it or waive it
 
-DRY and SOLID are heuristics, not laws, and a checker that fires on every repeat is noise that trains people to ignore it (AGENTS.md #8). Hold each finding to this bar before it blocks:
+To find the diff, prefer git markers (a tag like `phase-2-start`, a commit SHA, or a
+date the user gives): `git diff <start>..<end> -- .`. If no markers exist, ask the user
+for the range or a list of files the phase touched.
 
-- **Rule of three for DRY.** Two occurrences are not a violation — they are a coincidence. Flag duplication only at the third, or when the duplicated thing is a single source-of-truth rule (a tax rate, an auth check) that is *dangerous* to have in two places even twice. Premature abstraction is its own smell; do not force a shared helper onto two callers that may diverge.
-- **No speculative SOLID.** "This might need to be extensible someday" is not Open/Closed — it is a guess about the future you are paying for now. Flag a violation only when the variation it guards against already exists or is in the plan.
-- **Severity, not count.** One real Dependency-Inversion violation that the next phase will build on outranks ten cosmetic ones. Lead the verdict with the finding that gets *more expensive* if the phase closes over it, not the longest list.
+## The standard DRY/SOLID checks (always included)
 
-A finding that can't name a concrete file:line and a concrete way it bites later is not a finding — drop it. Refuse to manufacture violations to look thorough.
+These six items appear in every checklist, every phase:
 
-## Running the gate
+```
+- [ ] DRY: No rule, constant, or business logic duplicated across files changed in this phase
+- [ ] S (Single Responsibility): Each new or changed unit has exactly one reason to change
+- [ ] O (Open/Closed): New variants don't require editing existing switch/if chains or type lists
+- [ ] L (Liskov): No subtype overrides a method to throw NotSupported or narrows the base contract
+- [ ] I (Interface Segregation): No implementer forced to stub or no-op methods it doesn't use
+- [ ] D (Dependency Inversion): High-level code depends on interfaces, not concrete classes or vendors
+```
 
-1. **Find the phase's code.** Prefer git: the phase's start point (a tag like `phase-2-start`, the commit where the phase began, or a date the user gives) to `HEAD` — `git diff <start>..HEAD --name-only`. If there's no marker, ask for the start ref or fall back to reviewing the deliverables the plan lists for this phase. Review the *diff*, not the repository.
-2. **Find the plan.** Locate the phased planning doc — the file the user names, or a `PLAN.md` / `ROADMAP.md` / `docs/plan*` with phase headings. If there is no phased plan, run the checklist and report the verdict, but say plainly there's nothing to stamp — don't invent a plan file.
-3. **Run the six checks** against the diff, applying the calibration bar. Produce the verdict and any findings.
-4. **Resolve each finding** — fixed or waived. The phase closes only when the open count hits zero.
+### Calibration — only flag real smells
 
-## The waiver path — block, but don't stall
+- **DRY:** two occurrences are a coincidence; flag at three, or when the duplicated thing
+  is a single source-of-truth rule that is dangerous to have in two places (auth check,
+  tax rate, permission boundary).
+- **SOLID:** flag only when the variation or extension it guards against already exists or
+  is explicitly in the plan — not speculative future needs.
+- A finding must name a concrete `file:line` and explain how it gets more expensive if
+  the phase ships over it. Drop anything that can't clear that bar.
 
-A hard gate that can't be overridden gets disabled. Each finding can be **waived** instead of fixed, on one condition: a recorded one-line justification of why shipping it is the right call (deadline, the abstraction is genuinely premature, the duplication is intentional and noted). Record the waiver where the phase lives — a `Waived:` line under the stamped phase — so the exception travels with the work and the next phase sees it.
+## Phase-specific litmus tests
 
-Escalation: if a waiver is for an architectural violation that is **Costly or a One-way door** to reverse later (a Dependency-Inversion or Open/Closed call the rest of the system will build on), don't bury it in a one-liner — hand off to **record-decision** so the bet, its expected signal, and a revisit trigger are written down. A cosmetic DRY waiver stays inline; an architectural one becomes a decision record.
+After the six standard items, add two to four checks tailored to what this phase is
+actually building. Derive them from the phase's deliverables, not from a fixed template.
+Examples by phase type:
 
-## Stamping the plan
+| Phase type | Example litmus tests |
+|---|---|
+| Data / DB migration | Schema rollback tested; no data-destructive step runs without a dry-run flag |
+| API / endpoints | Contract versioned or backward-compatible; error shapes consistent across routes |
+| Auth / permissions | Least-privilege applied; no role check duplicated in caller and callee |
+| UI / frontend | No business logic in the view layer; state mutations go through one path |
+| Infra / config | Secrets not hardcoded; config values environment-scoped, not environment-named |
+| Refactor | No behavior change in the diff; test coverage held or improved |
+| Integration | Third-party calls go through an adapter, not direct SDK calls in domain code |
 
-On PASS (or all findings waived), mark the phase closed in the planning doc — match the structure that's already there:
+Choose the tests that match the phase. If a phase spans multiple types, combine.
 
-- A checkbox list → flip `- [ ] Phase 2: …` to `- [x]`.
-- A status line → set `Status: Closed — DRY/SOLID gate passed <date>`.
-- Neither → append one line under the phase heading: `> Closed <date> — phase-gate passed (N waived).`
+## Checklist block format
 
-Stamp only on a genuine pass. Never mark a phase closed with open, un-waived findings to make the doc look finished — a falsely-green plan is worse than an honestly-open one (AGENTS.md #6). The stamp is the *only* write this skill makes to the plan; don't reformat or reorder the rest of the doc.
+Always insert the QA block in this exact format, after the phase's deliverables and
+before the next phase heading:
 
-## When NOT to fire
+```markdown
+### QA Checklist
+<!-- phase-qa -->
+- [ ] DRY: No rule, constant, or business logic duplicated across files changed in this phase
+- [ ] S (Single Responsibility): Each new or changed unit has exactly one reason to change
+- [ ] O (Open/Closed): New variants don't require editing existing switch/if chains or type lists
+- [ ] L (Liskov): No subtype overrides a method to throw NotSupported or narrows the base contract
+- [ ] I (Interface Segregation): No implementer forced to stub or no-op methods it doesn't use
+- [ ] D (Dependency Inversion): High-level code depends on interfaces, not concrete classes or vendors
+- [ ] [Phase-specific litmus test 1]
+- [ ] [Phase-specific litmus test 2]
+```
 
-- **Mid-phase.** This is a boundary gate, not a running linter. If the phase isn't claiming to be done, stay silent.
-- **Docs-only, config-only, or spike phases.** A phase that bumped a dependency, edited copy, or built a throwaway prototype has no DRY/SOLID surface worth gating — say "nothing to gate here, closing" and stamp, rather than forcing the checklist.
-- **General code review.** "Find bugs in this" or "review my diff for correctness" is **code-review**'s job — phase-gate only asks the six design questions at a phase boundary, and only blocks on those.
-- **No phased plan exists.** Without phases there's no boundary to gate; offer a plain DRY/SOLID read if asked, but don't pretend to close anything.
+For a completed-phase diff review, pre-fill items:
+```markdown
+- [x] DRY: Clean — reviewed `git diff abc1234..def5678`, no duplicated rules found
+- [ ] D (Dependency Inversion): `OrderService` news up `MySQLClient` directly in constructor — inject or waive
+```
+
+The `<!-- phase-qa -->` comment is the idempotency marker. If a block with that marker
+already exists under a phase, do not add a second one — update it in place instead.
+
+## Output destination
+
+Always write to the same plan doc unless the user specifies otherwise at invocation.
+Do not create a separate report file. Do not reformat or reorder any other content in
+the doc — the only edits are inserting or updating the `### QA Checklist` blocks.
+
+## Gate enforcement
+
+This skill does not block or unblock phases. Enforcement is entirely at the operator's
+discretion. The checklist is a structured record of what was agreed to review — the
+operator checks items off as they validate the work, and can choose to ship with open
+items by leaving them unchecked (or adding a `~~strikethrough~~ Waived: reason` note).
+
+## When NOT to run
+
+- **No phased plan doc exists.** Without a plan there is nothing to write to — stop and
+  tell the user.
+- **Docs-only, config-only, or spike phases explicitly excluded by the user.** If the
+  user names a phase to skip at invocation, skip it with no checklist added.
+- **Mid-phase general review.** If the user wants a line-by-line bug or correctness
+  review, that is `/code-review` — this skill only adds or updates QA checklists.
