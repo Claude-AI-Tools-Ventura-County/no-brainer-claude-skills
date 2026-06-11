@@ -2,6 +2,12 @@
 
 All notable changes to Giant Brains Claude Skills are documented here. This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **giantbrains** — *Route.* The suite's router for whole-doc stress tests: triages the doc in a single message (which doc, what stage), runs the two or three stage-matched lenses report-only (frame/price/size for a draft; size-and-squeeze for in-progress; ledger audit and outcome cut for a retro), and dedupes overlapping findings into one synthesized verdict — one reversibility read, one do-next. Never edits the doc: writers (phase-qa, record-decision, linear) are offered afterward as explicit opt-ins. Refuses the battery on a single decision and routes to the one matching lens instead.
+
 ## [1.0.0] - 2026-06-06
 
 First public release: a six-skill suite for [Claude Code](https://claude.com/claude-code) spanning two acts — **deciding well**, then **improving verifiably**. Every skill shares one throughline: make the implicit explicit, lead with the line that survives skimming, and refuse rather than fake it.

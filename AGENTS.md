@@ -1,6 +1,6 @@
 # AGENTS.md
 
-> **An experiment.** This repo ships eight skills that teach AI assistants decision hygiene. This file is the same material compiled the other way: the skills' principles as *standing instructions* for any agent working in this repository — no skill invocation required. If it works, it's also a template you can copy into any repo. The skills fire at moments; this file is the ambient floor beneath them.
+> **An experiment.** This repo ships nine skills that teach AI assistants decision hygiene. This file is the same material compiled the other way: the skills' principles as *standing instructions* for any agent working in this repository — no skill invocation required. If it works, it's also a template you can copy into any repo. The skills fire at moments; this file is the ambient floor beneath them.
 
 ## Operating principles
 

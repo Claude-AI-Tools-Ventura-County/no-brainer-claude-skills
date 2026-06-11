@@ -2,9 +2,9 @@
 
 <img width="1941" height="1058" alt="giant-brains-02" src="https://github.com/user-attachments/assets/d5a0e02b-eec2-4026-b83e-cf725def5942" />
 
-Eight Claude Code skills that catch you at the moment of a decision — and again when you're improving something — and force a short, honest answer you can act on in seconds.
+Nine Claude Code skills that catch you at the moment of a decision — and again when you're improving something — and force a short, honest answer you can act on in seconds.
 
-**New here?** Jump to [Install](#install) — a symlink loop puts all eight in Claude Code in under a minute.
+**New here?** Jump to [Install](#install) — a symlink loop puts all nine in Claude Code in under a minute.
 
 ## About
 
@@ -28,6 +28,7 @@ A suite of skills for [Claude Code](https://claude.com/claude-code) that bring h
 - **An agent gave you scattered steps or a verbose completion message** and you need the execution sequence — [linear](linear/SKILL.md).
 - **You told an agent "make this faster"** but can't tell whether it actually did — [baseline-spec](baseline-spec/SKILL.md) to define what "better" means, then [auto-improve](auto-improve/SKILL.md) to prove it.
 - **You just made a call that's expensive to unwind** and want the bet written down before it evaporates — [record-decision](record-decision/SKILL.md).
+- **You have a whole plan doc, not one decision,** and want it stress-tested before work starts — [giantbrains](giantbrains/SKILL.md) triages once, runs the right two or three lenses, and returns one combined verdict.
 
 ## Act I — Deciding well (decision hygiene)
 
@@ -76,6 +77,16 @@ Every skill above produces a sharp one-shot verdict — and then the verdict eva
 [record-decision](record-decision/SKILL.md) is the suite's memory. At commit time it writes the decision to a dated file — the call, the fragile assumption it rides on, the expected signal with a by-when, the reversibility read, and a revisit trigger — then keeps the record *and* the project docs current as findings arrive. It's mostly a receiver: take-a-step-back's fragile assumption becomes the bet, blast-radius's verdict becomes the reversibility line, baseline-spec's metric becomes the expected signal. The records carry machine-readable frontmatter, so "find every Costly decision not yet Validated" is one query, and a date-based revisit trigger can become a `/schedule` appointment instead of a hope.
 
 It is deliberately **not** Claude's memory (`MEMORY.md` / `CLAUDE.md`): memory is operator-private and about *how Claude should work with you*; decision records live in git, address the whole team — humans and future agents — and answer *why the system is shaped this way*. The skill file carries the full comparison.
+
+## The router — one door to the suite
+
+When the input is a whole doc rather than a single decision, one skill picks the lenses for you.
+
+| Skill | The operator's question | Its job |
+|---|---|---|
+| [giantbrains](giantbrains/SKILL.md) | "Stress-test this whole plan — which lenses should run?" | **Route** — triage once, run the 2–3 stage-matched lenses report-only, synthesize one verdict |
+
+[giantbrains](giantbrains/SKILL.md) is the suite's front door for docs. It triages in one message (which doc, what stage), then routes to at most three lenses — a draft gets frame/price/size, an in-progress plan gets a size-and-squeeze check, a retro gets the ledger audit and the outcome cut — runs them report-only, and dedupes the overlap into a single bottom-line-shaped verdict: one reversibility read, one do-next. It never edits the doc: writers ([phase-qa](phase-qa/SKILL.md) for phased plans, [record-decision](record-decision/SKILL.md) for bets, [linear](linear/SKILL.md) for scattered steps) are offered afterward as explicit opt-ins. And on a one-pager it refuses the battery and hands off to the single matching lens — running five lenses on one decision is ceremony, not hygiene.
 
 ## What they share
 
@@ -131,7 +142,7 @@ The web app and desktop app share one flow: enable code execution, then upload e
 1. **Enable execution.** Open **Settings > Capabilities** and turn on **Code execution and file creation**. (Available on Free, Pro, Max, Team, and Enterprise plans. On Team/Enterprise, an owner must first enable it under **Organization settings > Skills**.)
 2. **Zip each skill folder** — one ZIP per skill, each with a `SKILL.md` at its root. Run from the repo root:
    ```bash
-   for s in take-a-step-back iron-triangle blast-radius bottom-line linear baseline-spec auto-improve record-decision; do
+   for s in take-a-step-back iron-triangle blast-radius bottom-line linear baseline-spec auto-improve record-decision giantbrains; do
      (cd "$s" && zip -rX "../$s.zip" . -x '.*')
    done
    ```
@@ -146,7 +157,7 @@ Put each skill directory where Claude Code looks for skills — **personal (all 
 
 ```bash
 mkdir -p "$HOME/.claude/skills"
-for s in blast-radius bottom-line linear iron-triangle take-a-step-back baseline-spec auto-improve record-decision; do
+for s in blast-radius bottom-line linear iron-triangle take-a-step-back baseline-spec auto-improve record-decision giantbrains; do
   ln -s "$PWD/$s" "$HOME/.claude/skills/$s"
 done
 ```
@@ -179,7 +190,8 @@ Lessons baked into these files. Keep them if you add more skills:
 │   ├── README.md
 │   └── FAQS.md
 ├── record-decision/SKILL.md      # The ledger — record → revisit
-├── phase-gate/SKILL.md           # Phase-exit DRY/SOLID gate
+├── giantbrains/SKILL.md          # The router — one door to the suite
+├── phase-qa/SKILL.md             # Plan QA checklists + phase diff review
 ├── snapshot/SKILL.md             # Session recovery
 ├── utils/                        # Standalone tooling — not part of the suite
 │   ├── README.md
