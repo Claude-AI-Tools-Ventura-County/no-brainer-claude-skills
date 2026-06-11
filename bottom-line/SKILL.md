@@ -31,6 +31,8 @@ Default to this shape. Drop any block that doesn't apply — never pad to fill t
 
 **Bottom line:** [1–2 sentences: the recommendation, or the single thing that matters most. Lead with the answer, not the setup.]
 
+**Context:** [1 line: what was just done, completed, or analyzed, and if relevant which phase/milestone this belongs to. Use when the source is a status update, phase check-in, completion message, or continuation of ongoing work.]
+
 **You're deciding:** [the real choice, as one crisp question. Omit if there's no decision — just information.]
 
 **Options:**
@@ -46,6 +48,7 @@ Default to this shape. Drop any block that doesn't apply — never pad to fill t
 - **One option / no real choice** → drop the Options block; Bottom line + Do next, plus Regret check if committing to that single path is hard to undo.
 - **No decision at all, just a long explanation** → replace "You're deciding", "Options", and "Regret check" with **Key points:** (3 bullets max); keep Bottom line and Do next.
 - **2–4 genuine alternatives** → the bullet list above.
+- **Status / completion / phase-related source** → include `Context:` unless the just-completed work and phase are already obvious from the Bottom line itself.
 - **Regret check** appears whenever a commitment is being made — it's the answer to "is there a decision in here I might regret later?". Omit it only in the no-decision "Key points" mode, where nothing is being chosen.
 - **Use a table only** when options trade off across the same 2–3 named dimensions and a table is genuinely denser than bullets. Otherwise bullets win, especially on mobile.
 - **Several independent decisions bundled together** → split into separate mini-blocks, each with its own one-line bottom line. Don't blur them into one mushy summary.
@@ -53,6 +56,8 @@ Default to this shape. Drop any block that doesn't apply — never pad to fill t
 ## Principles
 
 **Lead with the answer.** The first line is the recommendation. No "Great question", no recap of what the long version was about, no throat-clearing.
+
+**Anchor the reader in the workstream.** When the source is part of an ongoing project, status update, or phase boundary, include a one-line `Context:` immediately after the Bottom line that says what just happened and, if knowable from the source, which phase or milestone it belongs to. This is not a second summary — it is a location marker so the reader knows where they are in the journey.
 
 **Deduplicate ruthlessly.** Agent output states the same point three ways — once in the intro, once in the body, once in a closing "to summarize". Collapse all restatements into one. If two "options" differ only in wording, they are one option.
 

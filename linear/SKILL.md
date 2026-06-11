@@ -42,11 +42,12 @@ If a response has 0–2 trivial steps, or no one is executing anything (status s
 7. **Mark verification and stop points consistently.** Success signals go inline with `→ expect [observable result]`. Failure handling goes in a sub-bullet as `If [failure signal]: [fix or "stop here"]`. Use these exact markers throughout so checks are visually scannable.
 8. **No trailing steps.** Nothing *actionable* after the list. Non-actionable wrap-up is fine and often useful: a one-line result summary ("Done — X is now Y"), assumptions made, or constraints to be aware of. Context, rationale, and prerequisites-as-prose belong *before* the list (1–3 sentences); anything the user must *do* belongs *in* the list.
 9. **Unmask disguised step lists.** In status/completion messages, sections like "What I didn't do", "Open items", "Known issues", "Tracked for later", and "Suggested next steps" are usually the same list — remaining work — split across different rhetorical frames. Merge them into one "What's left" list in dependency order. While merging, split "didn't do" items into two kinds: *deferred work* (belongs in the list, in sequence) and *permanent non-goals* (one line after the list: "Out of scope: ..."). Truly independent items that block nothing and are blocked by nothing go on a final "Independent:" line rather than receiving a fake sequence position.
+10. **State where this sits in the journey.** When the source is a completion message, phase update, or continuation of prior work, use the pre-list prose to say what was just completed or analyzed and, if knowable, which phase or milestone the remaining list belongs to. Keep it to one sentence unless a second sentence is needed to distinguish "done" from "left to do."
 
 ## Output format
 
 ```markdown
-[1–3 sentences of context, only if genuinely needed]
+[1–3 sentences of context, only if genuinely needed. For status/completion/phase-related material, the first sentence should anchor the reader: what was just done/analyzed and which phase or milestone this list belongs to.]
 
 1. First action — exact command/value/path inline.
 2. Second action.
