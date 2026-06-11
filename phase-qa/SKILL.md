@@ -2,7 +2,8 @@
 name: phase-qa
 description: >
   Project plan enhancement tool. Reads a phased planning doc and appends a QA checklist
-  (DRY, SOLID, observability, and phase-appropriate litmus tests) under each phase. Invoke before work
+  (DRY, SOLID, observability, and phase-appropriate litmus tests) under each phase, and
+  optionally adds an anti-goals section to give each checklist a scope boundary. Invoke before work
   begins to bake checks into the plan; invoke mid-project or post-project to also run
   code-diff reviews on completed phases. Always confirms with the user where they are in
   the process before writing anything. Gate enforcement is at the operator's discretion.
@@ -20,7 +21,8 @@ heading level deeper than the phase heading (e.g., `#### QA Checklist` when phas
 `###`). The checklist is always checkbox format (`- [ ]`), regardless of how the rest of
 the plan doc is structured. Items get checked off as the phase's work is reviewed and
 approved. Enforcement is the operator's call — the checklist is a structured record, not
-a hard blocker.
+a hard blocker. Optionally, an anti-goals section is added at the top of the plan to
+give every checklist a scope boundary to check against.
 
 ## Invocation
 
@@ -111,6 +113,39 @@ will be fully automatic when you come back to close it."
 
 Record the markers found or created in the confirmation summary so the operator knows
 what's in place.
+
+## Step 3c — Anti-goals section (optional)
+
+After Step 3b, offer to add an anti-goals section if the plan doesn't already have one:
+
+> "Does your plan have an anti-goals section — a short list of what this project will
+> not do? If not, I can add one. It gives each phase checklist a scope boundary to
+> check against."
+
+**If the plan already has an anti-goals section:** note it and move on — the checklist
+will use it automatically (see below).
+
+**If the user declines:** skip this step entirely. No section is added.
+
+**If the user wants one added:** ask them to name 2–5 things the project will not do.
+Write an `## Anti-goals` section at the top of the plan doc, immediately before the
+first phase heading:
+
+```markdown
+## Anti-goals
+
+Things this project explicitly will not do:
+
+- [Anti-goal 1]
+- [Anti-goal 2]
+```
+
+**When anti-goals are defined (added now or already present in the plan):** append one
+additional item to every phase checklist, after the seven standard checks:
+
+```
+- [ ] Scope: no deliverable in this phase crosses into anti-goals
+```
 
 ## Step 4 — Determine status per phase
 
