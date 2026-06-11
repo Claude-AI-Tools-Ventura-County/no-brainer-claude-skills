@@ -179,6 +179,7 @@ Lessons baked into these files. Keep them if you add more skills:
 │   ├── README.md
 │   └── FAQS.md
 ├── record-decision/SKILL.md      # The ledger — record → revisit
+├── phase-gate/SKILL.md           # Phase-exit DRY/SOLID gate
 ├── snapshot/SKILL.md             # Session recovery
 ├── utils/                        # Standalone tooling — not part of the suite
 │   ├── README.md
