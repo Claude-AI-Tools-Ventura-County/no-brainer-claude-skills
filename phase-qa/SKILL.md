@@ -80,6 +80,38 @@ After classifying each phase, show the user a summary before modifying anything:
 Only write to the plan doc after the user confirms. This is the last chance to correct
 a mis-classification or adjust phase scope before anything is changed.
 
+## Step 3b — Set up diff markers (optional but recommended)
+
+After the user confirms the classification, offer to set up git phase markers so future
+diff reviews have clean boundaries to work from. This step is optional — skip it if the
+user declines or is already past the point where markers are useful.
+
+> "Want me to set up git markers for each phase so diff reviews are automatic later?
+> I can tag the current commit as the start of each upcoming phase."
+
+**If the environment has terminal/git access**, run the tags directly after the user
+confirms:
+
+| Phase status | Action |
+|---|---|
+| Upcoming | `git tag phase-N-start HEAD` — marks where the phase will begin |
+| In progress | Ask: "Do you know roughly when Phase N started (a date, a commit message, or a feature you added first)?" Then run `git log --oneline` to help locate it, and tag: `git tag phase-N-start <sha>` |
+| Completed, no marker | Same as in-progress — locate the start commit via `git log`, tag it as `phase-N-start`, then tag the end: `git tag phase-N-end <sha>` |
+| Completed, markers exist | Nothing to do — confirm the existing tags and move on |
+
+**If no terminal access**, provide the exact commands for the user to run:
+```
+git tag phase-3-start HEAD           # for the upcoming phase
+git tag phase-2-start <sha>          # for a phase already started or complete
+git tag phase-2-end <sha>            # optional end marker
+```
+
+Tell the user: "Run these in your terminal before starting Phase N, and the diff review
+will be fully automatic when you come back to close it."
+
+Record the markers found or created in the confirmation summary so the operator knows
+what's in place.
+
 ## Step 4 — Determine status per phase
 
 Based on the confirmed classification, apply the appropriate behavior per phase:
@@ -105,11 +137,13 @@ appear in the checklist (this is not a general correctness or bug review — use
 - Items with findings → unchecked (`- [ ]`) with the finding described inline so the
   operator can act on it or waive it
 
-To find the diff, prefer git markers (a tag like `phase-2-start`, a commit SHA, or a
-date the user gives): `git diff <start>..<end> -- .`. If the environment has no terminal
-or git execution capability, do not attempt to run the command — ask the user to paste
-the diff output or provide the list of files the phase touched instead. If no markers
-exist and the user can't supply one, ask for a list of files.
+To find the diff, use the phase markers created in Step 3b if available:
+`git diff phase-N-start..phase-N-end -- .` (or `..HEAD` if no end marker). If Step 3b
+was skipped or markers weren't created, fall back to a commit SHA or date the user
+provides. If the environment has no terminal or git execution capability, do not attempt
+to run the command — ask the user to paste the diff output or provide the list of files
+the phase touched instead. If no markers exist and the user can't supply one, ask for a
+list of files.
 
 **If no diff can be obtained** (no markers, no file list, and no paste available), add
 the checklist with all items unchecked and a note at the top:
