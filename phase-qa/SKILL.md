@@ -15,11 +15,12 @@ This skill enhances a phased project plan by embedding a QA checklist under ever
 before work begins — so quality expectations are explicit from the start, not bolted on
 at the end.
 
-**Core idea:** each phase in the plan gets a `### QA Checklist` block added to it. The
-checklist is always checkbox format (`- [ ]`), regardless of how the rest of the plan
-doc is structured. Items get checked off as the phase's work is reviewed and approved.
-Enforcement is the operator's call — the checklist is a structured record, not a hard
-blocker.
+**Core idea:** each phase in the plan gets a QA Checklist block added to it at one
+heading level deeper than the phase heading (e.g., `#### QA Checklist` when phases are
+`###`). The checklist is always checkbox format (`- [ ]`), regardless of how the rest of
+the plan doc is structured. Items get checked off as the phase's work is reviewed and
+approved. Enforcement is the operator's call — the checklist is a structured record, not
+a hard blocker.
 
 ## Invocation
 
@@ -41,8 +42,14 @@ Before reading the plan or writing anything, ask:
 > "Where are you in the project right now? (a) haven't started yet, (b) in progress —
 > which phase are you on? (c) all phases complete."
 
-The answer determines behavior for each phase (see below). Do not skip this step — the
-same plan doc looks very different depending on where the user stands.
+**Linear-progress assumption:** unless the user says otherwise, treat the project as
+linear — all phases before the current one are complete, the named phase is in progress,
+all later phases are upcoming. If the user indicates a non-linear project (e.g., Phase 4
+started before Phase 3 finished), ask for the status of each phase explicitly before
+proceeding.
+
+Do not skip this step — the same plan doc looks very different depending on where the
+user stands.
 
 ## Step 2 — Find the plan doc
 
@@ -51,10 +58,22 @@ Locate the phased planning doc: the file the user names, or search for `PLAN.md`
 exist, ask the user which one. If no phased plan exists, tell the user plainly and
 stop — this skill requires a plan doc to write to.
 
-## Step 3 — Determine status per phase
+## Step 3 — Confirm classification before writing
 
-Based on the user's answer in Step 1, classify each phase as **upcoming**, **in
-progress**, or **completed**. Apply the appropriate behavior:
+After classifying each phase, show the user a summary before modifying anything:
+
+> "Here's what I'll do:
+> - Phases 1–2 (completed): run diff review and pre-fill checklists with findings
+> - Phase 3 (in progress): add checklist, marked in progress
+> - Phases 4–6 (upcoming): add blank checklists
+> Proceed?"
+
+Only write to the plan doc after the user confirms. This is the last chance to correct
+a mis-classification or adjust phase scope before anything is changed.
+
+## Step 4 — Determine status per phase
+
+Based on the confirmed classification, apply the appropriate behavior per phase:
 
 ### Upcoming phases
 Add a QA checklist block immediately after the phase heading or deliverables list. The
@@ -65,11 +84,14 @@ checklist contains:
 All items start unchecked (`- [ ]`). No code review — there is no code yet.
 
 ### In-progress phase
-Treat the same as an upcoming phase: add the checklist if it isn't there yet. Note in
-the checklist header that the phase is in progress.
+Treat the same as an upcoming phase: add the checklist if it isn't there yet. Mark the
+header to show it is in progress: `#### QA Checklist *(in progress)*` (or one level
+deeper than the phase heading, as above).
 
 ### Completed phases
-Run a code diff review for the phase, then add the checklist with items pre-filled:
+Run a targeted diff review against the same DRY/SOLID and litmus-test items that will
+appear in the checklist (this is not a general correctness or bug review — use
+`/code-review` for that). Then add the checklist with items pre-filled:
 - Items that passed the diff review → checked (`- [x]`) with a one-line note
 - Items with findings → unchecked (`- [ ]`) with the finding described inline so the
   operator can act on it or waive it
@@ -77,6 +99,12 @@ Run a code diff review for the phase, then add the checklist with items pre-fill
 To find the diff, prefer git markers (a tag like `phase-2-start`, a commit SHA, or a
 date the user gives): `git diff <start>..<end> -- .`. If no markers exist, ask the user
 for the range or a list of files the phase touched.
+
+**If no diff can be obtained** (no markers and no file list available), add the checklist
+with all items unchecked and a note at the top:
+```
+> Diff unavailable — manual review required before checking off items.
+```
 
 ## The standard DRY/SOLID checks (always included)
 
@@ -98,8 +126,10 @@ These six items appear in every checklist, every phase:
   tax rate, permission boundary).
 - **SOLID:** flag only when the variation or extension it guards against already exists or
   is explicitly in the plan — not speculative future needs.
-- A finding must name a concrete `file:line` and explain how it gets more expensive if
-  the phase ships over it. Drop anything that can't clear that bar.
+- **For completed-phase diff reviews only:** a finding must name a concrete `file:line`
+  and explain how it gets more expensive if the phase ships over it. Drop anything that
+  can't clear that bar. For upcoming and in-progress phases there is no code to cite —
+  checklist items start unchecked with no findings attached.
 
 ## Phase-specific litmus tests
 
@@ -119,13 +149,23 @@ Examples by phase type:
 
 Choose the tests that match the phase. If a phase spans multiple types, combine.
 
+If a phase description is too vague to derive meaningful litmus tests (e.g., only a
+title with no deliverables), add this placeholder item and flag it inline:
+```
+- [ ] Acceptance criteria: Phase has a defined, testable acceptance criterion (define before closing)
+```
+Do not invent tests that may not apply — a placeholder that prompts the operator to
+refine is more useful than a generic checklist that gets rubber-stamped.
+
 ## Checklist block format
 
-Always insert the QA block in this exact format, after the phase's deliverables and
-before the next phase heading:
+Always insert the QA block after the phase's deliverables and before the next phase
+heading. The heading level must be one level deeper than the phase heading — if phases
+are `##`, use `###`; if phases are `###`, use `####`. When in doubt, inspect the plan's
+heading structure before inserting.
 
 ```markdown
-### QA Checklist
+#### QA Checklist
 <!-- phase-qa -->
 - [ ] DRY: No rule, constant, or business logic duplicated across files changed in this phase
 - [ ] S (Single Responsibility): Each new or changed unit has exactly one reason to change
@@ -166,4 +206,6 @@ items by leaving them unchecked (or adding a `~~strikethrough~~ Waived: reason` 
 - **Docs-only, config-only, or spike phases explicitly excluded by the user.** If the
   user names a phase to skip at invocation, skip it with no checklist added.
 - **Mid-phase general review.** If the user wants a line-by-line bug or correctness
-  review, that is `/code-review` — this skill only adds or updates QA checklists.
+  review, that is `/code-review`. For completed phases this skill does run a targeted diff
+  review, but only to populate checklist items against the DRY/SOLID and litmus-test
+  rubric — it does not surface general bugs or style issues.
