@@ -3,7 +3,8 @@ name: phase-qa
 description: >
   Project plan enhancement tool. Reads a phased planning doc and appends a QA checklist
   (DRY, SOLID, observability, and phase-appropriate litmus tests) under each phase, and
-  optionally adds an anti-goals section to give each checklist a scope boundary. Invoke before work
+  optionally adds an anti-goals section to give each checklist a scope boundary, and surfaces
+  per phase whether the work needs deploying to a remote environment. Invoke before work
   begins to bake checks into the plan; invoke mid-project or post-project to also run
   code-diff reviews on completed phases. Always confirms with the user where they are in
   the process before writing anything. Gate enforcement is at the operator's discretion.
@@ -147,6 +148,43 @@ additional item to every phase checklist, after the seven standard checks:
 - [ ] Scope: no deliverable in this phase crosses into anti-goals
 ```
 
+## Step 3d — Surface deployment need per phase (optional)
+
+After Step 3c, raise one question for the phases that could plausibly ship something
+runnable: does this phase need to be deployed to a remote environment (staging,
+production, a client server) before it counts as done?
+
+**This skill's only job here is to catch and surface *whether* a deploy step is needed —
+full stop.** It does not plan the deployment. Target, owner, rollback, sequencing, and
+verification details are a separate conversation the project planner has elsewhere; do
+not extract, prescribe, or record them in the checklist.
+
+> "Quick one: does any phase need to land on a remote environment to be done, or do they
+> all complete locally? I'm only flagging *whether* a deploy is needed — not how it's
+> done. The details are yours to work out separately."
+
+Pose the question broadly so no phase is silently skipped; record the answer narrowly.
+Each phase resolves to one of three outcomes:
+
+| Answer | What goes in the checklist |
+|---|---|
+| Deploy needed, confirmed | Add the deployment item, unchecked — to be confirmed done before the phase closes |
+| Maybe needed, unconfirmed | Add a placeholder flagging it for resolution (often a question for the plan author), like the acceptance-criteria placeholder |
+| No deploy needed | Add a one-line N/A note (checked), so the answer is on record rather than forgotten |
+
+The deployment line is conditional: a phase that completes locally gets the N/A note if
+the question was explicitly asked and answered, and nothing at all otherwise. The three
+forms:
+
+```
+- [ ] Deployment: this phase requires a remote deploy — confirm it's done before closing the phase
+- [ ] Deployment: confirm whether this phase needs a remote deploy before closing (check with the plan author)
+- [x] Deployment: N/A — phase completes locally, ships no remote artifact (asked, confirmed)
+```
+
+Like the Scope item, this line is operator-attested: the skill surfaces the question, the
+operator owns the answer.
+
 ## Step 4 — Determine status per phase
 
 Based on the confirmed classification, apply the appropriate behavior per phase:
@@ -156,6 +194,8 @@ Add a QA checklist block immediately after the phase heading or deliverables lis
 checklist contains:
 - The seven standard checks (DRY, SOLID, observability — always included)
 - Two to four phase-specific litmus tests derived from what the phase is building
+- Any conditional items whose trigger applies: the Scope item (Step 3c) and the
+  Deployment item (Step 3d)
 
 All items start unchecked (`- [ ]`). No code review — there is no code yet.
 
@@ -259,6 +299,11 @@ heading structure before inserting.
 - [ ] [Phase-specific litmus test 1]
 - [ ] [Phase-specific litmus test 2]
 ```
+
+**Conditional items** — when their trigger applies, append them after the litmus tests in
+this order: the Scope item (Step 3c, when anti-goals are defined), then the Deployment
+item (Step 3d, when the phase needs a remote deploy). Both are operator-attested — the
+skill surfaces them, it does not verify them.
 
 For a completed-phase diff review, pre-fill items:
 ```markdown
