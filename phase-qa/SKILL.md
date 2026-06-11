@@ -35,12 +35,21 @@ The user invokes the skill directly, e.g.:
 Any phases named as exceptions at invocation time are skipped entirely — no checklist
 added, no review run.
 
-## Step 1 — Confirm where the user is in the project
+## Step 1 — Triage in one message
 
-Before reading the plan or writing anything, ask:
+Before reading the plan or writing anything, ask all necessary triage questions in a
+single message so the user does not face a chain of blocking prompts. Combine whichever
+of these apply:
 
-> "Where are you in the project right now? (a) haven't started yet, (b) in progress —
-> which phase are you on? (c) all phases complete."
+> "A few quick questions before I start:
+> 1. Where are you in the project right now? (a) haven't started, (b) in progress —
+>    which phase are you on? (c) all phases complete.
+> 2. *(If multiple plan docs are visible)* Which plan doc should I use?
+> 3. *(If any phases are already complete)* Do you have git markers (tags, commit SHAs,
+>    or a date range) for the completed phases? Or should I ask you for the diff?"
+
+Only ask the questions that are actually needed — don't pre-emptively ask for git
+markers if the user just said they haven't started yet.
 
 **Linear-progress assumption:** unless the user says otherwise, treat the project as
 linear — all phases before the current one are complete, the named phase is in progress,
@@ -97,11 +106,13 @@ appear in the checklist (this is not a general correctness or bug review — use
   operator can act on it or waive it
 
 To find the diff, prefer git markers (a tag like `phase-2-start`, a commit SHA, or a
-date the user gives): `git diff <start>..<end> -- .`. If no markers exist, ask the user
-for the range or a list of files the phase touched.
+date the user gives): `git diff <start>..<end> -- .`. If the environment has no terminal
+or git execution capability, do not attempt to run the command — ask the user to paste
+the diff output or provide the list of files the phase touched instead. If no markers
+exist and the user can't supply one, ask for a list of files.
 
-**If no diff can be obtained** (no markers and no file list available), add the checklist
-with all items unchecked and a note at the top:
+**If no diff can be obtained** (no markers, no file list, and no paste available), add
+the checklist with all items unchecked and a note at the top:
 ```
 > Diff unavailable — manual review required before checking off items.
 ```
@@ -185,6 +196,12 @@ For a completed-phase diff review, pre-fill items:
 
 The `<!-- phase-qa -->` comment is the idempotency marker. If a block with that marker
 already exists under a phase, do not add a second one — update it in place instead.
+
+**Preserving manual checks on update:** when updating an existing checklist (e.g., a
+completed-phase diff review runs after the user already manually checked some items),
+preserve any item the user has already checked (`- [x]`) unless the diff review
+explicitly uncovers a new violation of that specific rule. Never uncheck an item the
+user approved unless you found concrete evidence it failed.
 
 ## Output destination
 
