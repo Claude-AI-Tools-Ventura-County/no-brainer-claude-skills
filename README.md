@@ -2,9 +2,9 @@
 
 <img width="1941" height="1058" alt="giant-brains-02" src="https://github.com/user-attachments/assets/d5a0e02b-eec2-4026-b83e-cf725def5942" />
 
-Nine Claude Code skills that catch you at the moment of a decision — and again when you're improving something — and force a short, honest answer you can act on in seconds.
+Ten Claude Code skills that catch you at the moment of a decision, again when you're improving something, and once more before you call it done — and force a short, honest answer you can act on in seconds.
 
-**New here?** Jump to [Install](#install) — a symlink loop puts all nine in Claude Code in under a minute.
+**New here?** Jump to [Install](#install) — a symlink loop puts all ten in Claude Code in under a minute.
 
 ## About
 
@@ -27,6 +27,7 @@ A suite of skills for [Claude Code](https://claude.com/claude-code) that bring h
 - **An agent handed you a wall of options** and you just need the call — [bottom-line](bottom-line/SKILL.md).
 - **An agent gave you scattered steps or a verbose completion message** and you need the execution sequence — [linear](linear/SKILL.md).
 - **You told an agent "make this faster"** but can't tell whether it actually did — [baseline-spec](baseline-spec/SKILL.md) to define what "better" means, then [auto-improve](auto-improve/SKILL.md) to prove it.
+- **The work feels finished** and you want what's missing enumerated — or cleared — before you say "done" — [loose-ends](loose-ends/SKILL.md).
 - **You just made a call that's expensive to unwind** and want the bet written down before it evaporates — [record-decision](record-decision/SKILL.md).
 - **You have a whole plan doc, not one decision,** and want it stress-tested before work starts — [giantbrains](giantbrains/SKILL.md) triages once, runs the right two or three lenses, and returns one combined verdict.
 
@@ -64,7 +65,17 @@ Once you've decided to make something concretely better, a second pair carries i
 
 These **chain** too: **define** the measurable contract, then **improve** against it. The routing is deliberately one-directional — a cold-start request like *"optimize this"* belongs to [baseline-spec](baseline-spec/SKILL.md) (the **definer**), which fires first; [auto-improve](auto-improve/SKILL.md) (the **executor**) defers any undefined request back to it and only runs once a metric, an un-gameable oracle, and a budget already exist. baseline-spec refuses to optimize a goal it can't measure — exactly the Act I instinct of *refuse rather than fake it* — and hands off to auto-improve once the three pillars are locked. auto-improve is the suite's one **executional** skill: instead of emitting a verdict, it runs a ratcheted mutate-measure-keep-or-revert search and returns either a verified, numbered win or a clean "no real improvement found." See its [README](auto-improve/README.md) and [operator FAQ](auto-improve/FAQS.md).
 
-The two acts join end to end: decide *whether and what* (Act I), sequence the work ([linear](linear/SKILL.md)), then *prove the improvement* (Act II).
+The two acts join end to end: decide *whether and what* (Act I), sequence the work ([linear](linear/SKILL.md)), then *prove the improvement* (Act II) — and sweep the loose ends before calling it done.
+
+## The sweep — declaring done honestly
+
+Work rarely ends where the request did. One skill fires at the last moment — after the work, before the word "done."
+
+| Skill | The operator's question | Its job |
+|---|---|---|
+| [loose-ends](loose-ends/SKILL.md) | "What did I forget?" | **Sweep** — diff the delivered work against the original ask, enumerate what's absent, or clear it to ship |
+
+[loose-ends](loose-ends/SKILL.md) is Act I's mirror image: the decision skills guard the moment *before committing*; this one guards the moment *before declaring done*. It reconstructs the contract (the original request, including the throwaway clauses), inventories what was actually delivered, and sweeps for the classic forgettables — the requirement that fell out mid-session, the sibling surface still stating the pre-change truth (a README count, a docs table, an install loop), the "tests pass" that was true three edits ago, the debug print left in the handler. Findings come back blocking-first, each with an evidenced address and a one-line close-out — and "swept clean, ship it" is a first-class verdict, not a failure to find. It is strictly post-work: "what am I missing?" asked *before* the work exists belongs to [take-a-step-back](take-a-step-back/SKILL.md), gating the phases of a plan doc belongs to [phase-qa](phase-qa/SKILL.md), and bugs in code that *is* present belong to a code review — this skill hunts the absent, not the wrong.
 
 ## The ledger — remembering why
 
@@ -92,7 +103,7 @@ When the input is a whole doc rather than a single decision, one skill picks the
 
 - **Short, structured output.** Every skill leads with the one line that must survive skimming, then adds only the fields that change the call. Drop anything that doesn't; never pad the template. When the work is part of an ongoing phase or status thread, the compression skills also add a brief location marker so the user knows what was just done and where the next steps fit. `baseline-spec` follows the same one-shot, scannable shape as the four decision skills; `linear`'s output *is* the structure — one numbered list, nothing actionable outside it; `record-decision` writes the same scannable shape to a file instead of the chat; `auto-improve` is the lone exception — it *executes* a loop rather than emitting a verdict, but still leads with an honest headline number.
 - **A shared reversibility read.** Where it applies, the skills speak one vocabulary — **Easy / Costly / One-way door** — so a two-way door is treated differently from a commitment that is expensive to unwind. (Iron-triangle's version asks whether a sacrificed corner stays *contained* or *compounds*.)
-- **Refuse rather than fake it.** Accurate signal over constant alarm. The decision skills stay quiet when a change is small and reversible; `baseline-spec` refuses to optimize a goal it can't measure; `auto-improve` rejects any "win" that's gamed or lost in the noise. Calibration is as much about declining as raising a flag.
+- **Refuse rather than fake it.** Accurate signal over constant alarm. The decision skills stay quiet when a change is small and reversible; `baseline-spec` refuses to optimize a goal it can't measure; `auto-improve` rejects any "win" that's gamed or lost in the noise; `loose-ends` returns "swept clean — ship it" rather than inventing a finding to justify firing. Calibration is as much about declining as raising a flag.
 
 ## Calibration — what good output looks like
 
@@ -142,7 +153,7 @@ The web app and desktop app share one flow: enable code execution, then upload e
 1. **Enable execution.** Open **Settings > Capabilities** and turn on **Code execution and file creation**. (Available on Free, Pro, Max, Team, and Enterprise plans. On Team/Enterprise, an owner must first enable it under **Organization settings > Skills**.)
 2. **Zip each skill folder** — one ZIP per skill, each with a `SKILL.md` at its root. Run from the repo root:
    ```bash
-   for s in take-a-step-back iron-triangle blast-radius bottom-line linear baseline-spec auto-improve record-decision giantbrains; do
+   for s in take-a-step-back iron-triangle blast-radius bottom-line linear baseline-spec auto-improve loose-ends record-decision giantbrains; do
      (cd "$s" && zip -rX "../$s.zip" . -x '.*')
    done
    ```
@@ -157,7 +168,7 @@ Put each skill directory where Claude Code looks for skills — **personal (all 
 
 ```bash
 mkdir -p "$HOME/.claude/skills"
-for s in blast-radius bottom-line linear iron-triangle take-a-step-back baseline-spec auto-improve record-decision giantbrains; do
+for s in blast-radius bottom-line linear iron-triangle take-a-step-back baseline-spec auto-improve loose-ends record-decision giantbrains; do
   ln -s "$PWD/$s" "$HOME/.claude/skills/$s"
 done
 ```
@@ -189,13 +200,15 @@ Lessons baked into these files. Keep them if you add more skills:
 │   ├── SKILL.md
 │   ├── README.md
 │   └── FAQS.md
+├── loose-ends/SKILL.md           # The sweep — before "done"
 ├── record-decision/SKILL.md      # The ledger — record → revisit
 ├── giantbrains/SKILL.md          # The router — one door to the suite
 ├── phase-qa/SKILL.md             # Plan QA checklists + phase diff review
 ├── snapshot/SKILL.md             # Session recovery
 ├── utils/                        # Standalone tooling — not part of the suite
 │   ├── README.md
-│   └── read-only/SKILL.md        # Pre-approve read-only permissions
+│   ├── read-only/SKILL.md        # Pre-approve read-only permissions
+│   └── claude-code-dotfiles-fork/   # Kit: sync ~/.claude across machines (INSTALL.md + templates/)
 └── README.md
 ```
 

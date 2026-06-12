@@ -1,1 +1,4 @@
 .DS_Store
+
+# Local Claude Code session config — machine-specific, never commit
+/.claude/

@@ -1,0 +1,41 @@
+# ── ~/.claude sync allowlist ────────────────────────────────────────────────
+# TRUE allowlist: ignore EVERYTHING by default, then re-include only the files
+# we want to version. Any new file Claude Code creates later (caches, tokens,
+# credentials) stays OUT unless explicitly added below. This is the safe default.
+*
+
+# Re-include the configs we sync (directory entry first, then its contents)
+!/.gitignore
+!/CLAUDE.md
+!/settings.json
+!/commands/
+!/commands/**
+!/hooks/
+!/hooks/**
+!/agents/
+!/agents/**
+!/rules/
+!/rules/**
+!/skills/
+!/skills/**
+
+# Re-ignore macOS junk that lives under allowlisted dirs
+.DS_Store
+**/.DS_Store
+
+# NOTE on skills: they are synced as REAL files (copied from an SSOT skills
+# repo by hooks/sync-skills-from-repo.sh, if you use one), so they ARE tracked
+# here — that's what lets other machines consume them. No symlinks are ever
+# committed (git stores a symlink as a path string, broken on every other machine).
+
+# ── Belt-and-suspenders: never version secrets or runtime state ──────────────
+# (already covered by the top-level `*`, listed explicitly as documentation)
+.credentials.json
+credentials.json
+auth.json
+*.key
+*.pem
+*.token
+*.bak
+mcp-needs-auth-cache.json
+stats-cache.json
