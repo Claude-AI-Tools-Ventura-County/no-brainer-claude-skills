@@ -16,7 +16,9 @@
 # as `~/.claude/skills/read-only`). Two SKILL.md dirs with the same basename
 # anywhere in the repo would overwrite each other — keep leaf names unique.
 # ─────────────────────────────────────────────────────────────────────────────
-set -euo pipefail
+# No `set -e`: this runs from a session hook and must NEVER exit nonzero —
+# every failure path warns and continues (or exits 0).
+set -uo pipefail
 
 # Point this at your skills repo, or export SKILLS_SSOT_REPO to override.
 REPO="${SKILLS_SSOT_REPO:-$HOME/path/to/your-skills-repo}"
@@ -27,7 +29,10 @@ if [ ! -d "$REPO" ]; then
   exit 0
 fi
 
-mkdir -p "$DEST"
+if ! mkdir -p "$DEST" 2>/dev/null; then
+  echo "[sync-skills] WARN: cannot create $DEST — skipping." >&2
+  exit 0
+fi
 synced=0
 
 # Every directory containing a SKILL.md anywhere in the repo (excluding .git) is
@@ -46,16 +51,19 @@ while IFS= read -r skill_md; do
   # excluded from the comparison and stripped from the copy so macOS junk never
   # reaches the dotfiles repo and never causes a perpetual re-copy.
   if [ ! -d "$dst_dir" ] || ! diff -rq -x .DS_Store "$src_dir" "$dst_dir" >/dev/null 2>&1; then
-    rm -rf "$dst_dir"
-    cp -R "$src_dir" "$dst_dir"
-    find "$dst_dir" -name '.DS_Store' -delete 2>/dev/null || true
-    echo "[sync-skills] updated: $name"
-    synced=$((synced + 1))
+    if rm -rf "$dst_dir" 2>/dev/null && cp -R "$src_dir" "$dst_dir" 2>/dev/null; then
+      find "$dst_dir" -name '.DS_Store' -delete 2>/dev/null || true
+      echo "[sync-skills] updated: $name"
+      synced=$((synced + 1))
+    else
+      echo "[sync-skills] WARN: failed to copy $name — continuing." >&2
+    fi
   fi
-done < <(find "$REPO" -name SKILL.md -not -path '*/.git/*')
+done < <(find "$REPO" -name SKILL.md -not -path '*/.git/*' 2>/dev/null)
 
 if [ "$synced" -eq 0 ]; then
   echo "[sync-skills] already up to date."
 else
   echo "[sync-skills] $synced skill(s) synced from repo → ~/.claude/skills."
 fi
+exit 0

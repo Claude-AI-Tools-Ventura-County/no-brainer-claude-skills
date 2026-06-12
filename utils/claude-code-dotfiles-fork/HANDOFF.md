@@ -2,7 +2,10 @@
 
 **Audience:** the next LLM/engineer taking over this sync setup.
 **Last updated:** 2026-06-11 · **Owner:** noel@neochro.me (GitHub: `noelsaw1`)
-**Status:** live and working. Last synced commit `37be50c` on `main`.
+**Status:** live and working. HEAD moves with every session (SessionEnd
+auto-commits), so don't trust any commit hash written here — run the §10
+verification commands for current state. Notable fixed points: `37be50c`
+(.DS_Store cleanup), `45fc0ef` (credential strip), `efe2d1e` (sync hardening).
 
 > Everything below uses absolute paths. This doc is self-contained — you do not
 > need prior conversation context. Read the **Invariants** section before changing anything.
@@ -167,6 +170,16 @@ Plus standalone in `~/.claude`: `debug-mantra`.
 - **Skills are keyed by leaf directory name** (`utils/read-only` → `skills/read-only`).
   Two `SKILL.md` dirs with the same basename anywhere in the SSOT repo would
   silently overwrite each other in `~/.claude/skills`. Keep leaf names unique.
+- **Credentials leaked into tracked `settings.json`.** Claude Code's permission
+  allowlist records approved Bash commands *verbatim* — including any inline
+  `SSHPASS=...`/`sshpass -p ...` passwords and API keys those commands carried.
+  25 such entries were tracked and pushed. **Fix in place (2026-06-11, `45fc0ef`):**
+  entries stripped from `settings.json`. The lesson: never approve a Bash command
+  with an inline secret — use env vars or files the allowlist can't capture.
+- **The allowlist re-includes could resurrect runtime state nested under synced
+  dirs** (e.g. `skills/foo/history.jsonl` was stageable via `!/skills/**`).
+  **Fix in place (2026-06-11):** later re-ignore rules for `history.jsonl`,
+  `projects/`, `sessions/`, `transcripts/` at any depth.
 
 ---
 
@@ -226,8 +239,13 @@ git fetch -q origin && [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)
 
 ## 12. Known issues / TODO
 
-- ~~`.DS_Store` files are committed~~ **RESOLVED 2026-06-11** — see §8 for what
-  was done (gitignore re-ignore, `git rm --cached`, sync-script strip + diff exclude).
+- ~~`.DS_Store` files are committed~~ **RESOLVED 2026-06-11** (`37be50c`) — see §8 for
+  what was done (gitignore re-ignore, `git rm --cached`, sync-script strip + diff exclude).
+- **OPEN — credential rotation pending.** The secrets stripped in `45fc0ef` (SSH
+  passwords for the sleuth-app server, a Gemini API key) remain in the dotfiles
+  repo's *git history* until the credentials are rotated and/or the history is
+  purged (e.g. `git filter-repo` + force-push, then re-clone on every machine).
+  Rotation is the primary fix; the repo is private, but treat the values as exposed.
 - **SessionEnd may not fire on a hard crash / force-quit of VS Code.** Acceptable — the next
   SessionStart pull reconciles, and nothing is lost locally. Don't add a mid-session timer
   to "fix" this unless the user asks.
@@ -237,11 +255,13 @@ git fetch -q origin && [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)
 
 ---
 
-## 13. Current state snapshot (2026-06-11, post .DS_Store cleanup)
+## 13. Current state snapshot (2026-06-11, post security + .DS_Store cleanup)
 
-- dotfiles repo HEAD: `37be50c` on `main`, in sync with `origin` (PRIVATE).
+- dotfiles repo HEAD at snapshot time: `efe2d1e` on `main`, in sync with `origin`
+  (PRIVATE). HEAD advances every session — verify live with §10, don't trust this line.
 - Tracked: `.gitignore`, `settings.json`, `commands/` (2), `hooks/` (4), `skills/` (14 skills, 16 files).
-- No secrets tracked; no symlinks tracked; no `.DS_Store` tracked (verified).
+- No secrets tracked **at HEAD**; history still holds the stripped credentials
+  until rotation/purge (see §12). No symlinks tracked; no `.DS_Store` tracked (verified).
 - Sync mechanism: Claude Code `SessionStart`/`SessionEnd` hooks. Old zsh function removed.
 - Standalone kit (INSTALL.md + templates/) published alongside this doc in the
   SSOT repo at `utils/claude-code-dotfiles-fork/`.

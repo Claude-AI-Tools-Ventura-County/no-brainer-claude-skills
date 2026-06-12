@@ -1,10 +1,8 @@
 # How to Sync Claude Code Settings Across Multiple Machines
 
-![Claude Code](https://img.shields.io/badge/Claude_Code-5C4EE5?logo=anthropic&logoColor=white)
-![Shell](https://img.shields.io/badge/Shell-zsh%20%7C%20bash-89E051?logo=gnubash&logoColor=white)
-![Git](https://img.shields.io/badge/Sync-Git-F05032?logo=git&logoColor=white)
-![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white)
-![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)
+Fork of: https://github.com/elizabethfuentes12/claude-code-dotfiles
+
+Original License: MIT-0
 
 **Claude Code dotfiles** let you version-control your `~/.claude` directory — including `CLAUDE.md`, custom slash commands, settings, hooks, and agents — so your AI coding environment stays in sync across every machine you use. No extra tools required: just Git and a shell function.
 
@@ -16,7 +14,7 @@
 
 | File / Folder | Purpose |
 |---------------|---------|
-| [claude-code-skills/](./claude-code-skills/) | Reusable Claude Code skills for AWS — architecture diagrams in draw.io, and more |
+| [claude-code-skills/](https://github.com/elizabethfuentes12/claude-code-dotfiles/tree/main/claude-code-skills) (upstream only) | Reusable Claude Code skills for AWS — architecture diagrams in draw.io, and more |
 | `CLAUDE.md` | Global instructions, preferences, and context that Claude reads at session start |
 | `settings.json` | Model selection, permissions, and environment config |
 | `commands/` | Custom slash commands (`.md` files) available in every session |
@@ -411,7 +409,7 @@ Add it to the allowlist in `.gitignore` (with a `!` prefix) and to the `git add`
 
 ## Contributing
 
-Contributions are welcome! See [CONTRIBUTING](CONTRIBUTING.md) for more information.
+Contributions are welcome! See the upstream [CONTRIBUTING](https://github.com/elizabethfuentes12/claude-code-dotfiles/blob/main/CONTRIBUTING.md) for more information.
 
 ---
 
@@ -423,4 +421,4 @@ If you discover a potential security issue in this project, notify AWS/Amazon Se
 
 ## License
 
-This library is licensed under the MIT-0 License. See the [LICENSE](LICENSE) file for details.
+This library is licensed under the MIT-0 License. See the upstream [LICENSE](https://github.com/elizabethfuentes12/claude-code-dotfiles/blob/main/LICENSE) file for details.

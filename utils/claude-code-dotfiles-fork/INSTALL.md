@@ -40,8 +40,10 @@ of this kit as a worked example.)
    ```bash
    gh repo create YOUR-USERNAME/claude-code-dotfiles --private
    ```
-2. Initialize `~/.claude` as a git repo:
+2. Initialize `~/.claude` as a git repo (`mkdir -p` covers a machine where
+   Claude Code hasn't created it yet):
    ```bash
+   mkdir -p ~/.claude
    cd ~/.claude
    git init -b main
    git remote add origin https://github.com/YOUR-USERNAME/claude-code-dotfiles.git
@@ -97,7 +99,7 @@ versioned independently of your private config):
 
 1. Authenticate to GitHub (`gh auth status`), then:
    ```bash
-   mv ~/.claude ~/.claude.bak-$(date +%Y%m%d)
+   [ -e ~/.claude ] && mv ~/.claude ~/.claude.bak-$(date +%Y%m%d)
    git clone https://github.com/YOUR-USERNAME/claude-code-dotfiles.git ~/.claude
    ```
 2. Restore machine-local files from the backup (these are NOT synced):

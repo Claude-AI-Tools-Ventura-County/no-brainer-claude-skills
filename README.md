@@ -181,12 +181,14 @@ Lessons baked into these files. Keep them if you add more skills:
 
 - **Valid frontmatter on line 1.** The file must open with `---` and a YAML `name` + `description`, with no prose preamble and no ` ```yaml ` code fence wrapping it — otherwise the skill silently fails to load and never appears.
 - **Entry file must be `SKILL.md`, exact case.** The loader matches it case-sensitively even on case-insensitive macOS, so a lowercase `skill.md` is silently skipped — and watch for git hiding a case-only rename when `core.ignorecase` is true.
-- **ASCII punctuation.** Straight quotes and regular hyphens. Curly quotes and non-breaking hyphens (`‑`) look identical but break grep, copy, and matching. Em-dashes are fine.
+- **ASCII punctuation.** Straight quotes and regular hyphens. Curly quotes and non-breaking hyphens (U+2011) look identical to their ASCII twins but break grep, copy, and matching. Em-dashes are fine.
 - **Triggers live in the `description`.** That is the surface Claude matches against — keep it concrete and observable ("about to recommend a migration"), never circular ("fire when the change is major", which the skill can only know *after* running).
 - **Examples calibrate behavior.** Include at least one counter-example where the skill correctly does *not* escalate — a small change, a cheap reversible call — or it will skew toward alarm.
 - **Brevity is the product.** Each skill's output should be just enough meat that a human operator will actually read it.
 
 ## Layout
+
+Abbreviated — skills and their entry points only. Repo meta (`AGENTS.md`, `CHANGELOG.md`, `CLAUDE.md`, `LICENSE`) and the dotfiles-sync kit's inner files (`INSTALL.md`, `HANDOFF.md`, `templates/`) are omitted; see [utils/README.md](utils/README.md) for the kit's contents.
 
 ```
 .
