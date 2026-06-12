@@ -2,3 +2,4 @@
 
 # Local Claude Code session config — machine-specific, never commit
 /.claude/
+/relay
