@@ -61,7 +61,7 @@ If the user asks to take a turn but the file doesn't exist yet, you're in this m
    - **Reviewer:** review against the Definition of Done. **Do not edit the artifact** — it isn't yours to change. Write each issue as a graded finding, attaching a concrete suggested fix wherever you can (so the Producer can apply it in one step). Set a verdict.
 4. **Append your block** at the bottom, directly above the marker line. Never edit earlier turns.
 5. **Update the header:** flip `NEXT`; bump `ROUND` when a Producer opens a new cycle; set `STATUS` (`Approved` ends the relay; `Escalated` if the max `ROUND` ends without `Approved`).
-6. **Commit your turn:** `relay(<slug>): <role> r<N>`, then fill the hash into your block's `Commit:` line. This is what lets the operator `git diff` exactly which proposals the Producer implemented — the safety net behind every applied change. A **Reviewer turn edits nothing**, so it is always `Commit: none (comments only)`; the Producer's turn carries the actual diff. (If the Producer's turn also touched no tracked files, or the log is gitignored, it too writes `Commit: none (comments only)` and the other window reads the file on disk.)
+6. **Commit your turn:** `relay(<slug>): <role> r<N>`, then fill the hash into your block's `Commit:` line. This is what lets the operator `git diff` exactly which proposals the Producer implemented — the safety net behind every applied change. A **Reviewer turn never changes the artifact**: if the relay log is gitignored (the common case) it writes `Commit: none (comments only)`; if the log is *tracked*, the Reviewer still commits the log (rule 9 — no uncommitted state across a handoff) and records that hash. The Producer's turn carries the actual artifact diff — or `Commit: none (comments only)` if it too touched no tracked files.
 7. **Hand off in one line.** Close your reply to the human with who goes next, e.g. *"Round 2 Reviewer done — Changes requested, 1 Blocker. Tell the Producer to take its turn."* The human nudges; they never paste.
 
 ### Turn block formats
@@ -77,8 +77,10 @@ Append exactly one of these per turn.
 - [Should] <finding> — Proposed fix: <…>
 - [Nit] <finding> — Proposed fix: <…>
   (or "none — approved as-is")
-**Commit:** none (Reviewer proposes only; never edits the artifact)
+**Commit:** <log hash if this log is tracked, else "none (comments only)"> — the Reviewer never edits the artifact
 ```
+
+**Verdict semantics.** `Changes requested` and `Blocked` keep the relay open for a Producer turn to dispose of the proposals; `Approved` **closes** it. So a Reviewer that wants its proposals actioned *in-thread* must set `Changes requested`, not `Approved` — any `[Nit]` left on an `Approved` verdict is the author's discretion, handled out-of-band after the relay closes.
 
 **Producer (rounds 2+):**
 ```
@@ -143,7 +145,7 @@ ROUND: 1 / 5
 4. Stay tight. Requests and findings are bullets, not essays.
 5. **The Reviewer never edits the artifact.** It proposes graded findings, each with a concrete suggested fix where possible. The Producer (the original author), with the operator, decides each proposal and implements the approved ones — logging a disposition (Implemented / Modified / Declined + reason) for every one.
 6. Grade every finding:  `[Blocker]` must fix to ship · `[Should]` strong recommendation · `[Nit]` optional.
-7. The Reviewer posts a Verdict every turn. The relay ends on **Approved**. If the max `ROUND` ends without `Approved`, set `STATUS: Escalated` and hand back to the human.
+7. The Reviewer posts a Verdict every turn. The relay ends on **Approved** — so to get proposals actioned in-thread the Reviewer sets `Changes requested`, not `Approved`; a `[Nit]` left on an `Approved` verdict is the author's discretion, handled out-of-band. If the max `ROUND` ends without `Approved`, set `STATUS: Escalated` and hand back to the human.
 8. End your turn by committing it: `relay(<slug>): <role> r<N>`, then fill the hash into your `Commit:` line — so the other agent can `git diff` exactly what changed. If your turn touched no tracked files (comments-only, or this log is gitignored), write `Commit: none (comments only)`.
 9. **One window at a time, clean tree at every handoff.** Both agents share one working tree; the `NEXT` pointer is honor-system, not a lock. Never start a turn while the other window may still be editing, and never flip `NEXT` with uncommitted changes left in the tree — commit or stash first, so the next agent never inherits half-finished state.
 
