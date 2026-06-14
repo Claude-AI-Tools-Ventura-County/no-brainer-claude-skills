@@ -34,6 +34,7 @@ One round = a Producer turn + a Reviewer turn. The relay ends when the Reviewer'
 
 - One folder per day; multiple relays per day live side by side, each with its own slug.
 - Slug = short, lowercase, hyphenated topic — derive it from the artifact filename when obvious (`detect_abuse.py` → `detect-abuse`), otherwise ask the user for a 2–4 word topic.
+- `relay-system/` is local working scratch, not the artifact. Whether to track or `.gitignore` it is the operator's call: gitignore it to keep history quiet (recommended for public repos), or track it in a private repo if you want the relay thread in history. Either way, both agents always read it on disk in the same worktree — only the **artifact** must stay git-tracked, since ground rule 8's `git diff` handoff runs against the artifact, not this log.
 
 ---
 
