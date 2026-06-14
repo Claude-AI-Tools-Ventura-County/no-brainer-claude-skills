@@ -3,3 +3,6 @@
 # Local Claude Code session config — machine-specific, never commit
 /.claude/
 /relay-system/
+
+# Personal session recovery artifact — may contain pasted chat content, never commit
+/snapshot.md
