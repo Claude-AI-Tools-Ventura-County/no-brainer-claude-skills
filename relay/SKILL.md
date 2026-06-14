@@ -107,6 +107,31 @@ Append exactly one of these per turn.
 - **Don't loop forever.** If the same Blocker is contested twice, escalate to the human rather than ping-pong. Honor the max round.
 - **Assume nothing is shared.** The two agents have separate memory; if a decision matters, it goes in the file.
 
+## Hands-free handoff (opt-in, all-Claude only)
+
+By default the human serializes the relay with a one-line "your turn" nudge — and that nudge is the **lock**: it guarantees the previous turn is committed before the next begins. You can automate the nudge away **only when both windows are Claude Code sessions**, by replacing it with a *guarded poll* — each window watches the file and takes its turn the moment it's genuinely ready, never on a clock.
+
+**Why not a fixed timer.** A "fire in N minutes" timer swaps a readiness *condition* for a guess: too short and the next turn fires on a half-finished, uncommitted tree (the clobber rule 9 exists to prevent); too long and you waited for nothing. The trigger you want is "it's my turn and the tree is clean," not "N minutes elapsed."
+
+**The guard (non-negotiable).** A polling window takes its turn only when **both** hold:
+1. `NEXT` names its role, **and**
+2. the working tree is clean — the other window has already committed (`git status --porcelain` shows nothing for the artifact).
+
+If either is false it does nothing and waits for the next tick. The *condition* is now the lock, so "one window at a time" still holds — and the order is unchanged: do the work → commit → flip `NEXT`, so a poller never sees `NEXT` flip before the commit lands.
+
+**Setup.** Opt in at relay start by running a guarded `/loop` in each Claude window:
+```
+# Reviewer window
+/loop 60s take the Reviewer turn on relay-system/<date>/<slug>.md ONLY if NEXT is Reviewer and the tree is clean; otherwise do nothing and wait
+# Producer window
+/loop 60s take the Producer turn on relay-system/<date>/<slug>.md ONLY if NEXT is Producer and the tree is clean; otherwise do nothing and wait
+```
+Record the mode in the file so each window knows it's live — set Setup's `Handoff:` to `hands-free poll (all-Claude)`. A short interval (≈60s) keeps the prompt cache warm; the other window's edits aren't harness-tracked, so polling is the correct way to notice them.
+
+**Stop conditions.** A polling window stops when `STATUS` is `Approved` or `Escalated`, or after a bounded number of idle ticks with no change — then it escalates to the human rather than spinning forever. Honor the max `ROUND` exactly as in manual mode.
+
+**Stays manual when** any window is a non-Claude tool (Codex, Gemini, …): they have their own schedulers or none and can't be driven this way, so cross-tool relays keep the human nudge. Hands-free is an accelerator for the all-Claude case — never the default, because the default has to stay tool-agnostic and human-locked.
+
 ## Framing
 
 Don't just silently edit files. Open each turn with a short conversational line to the human ("Taking the Reviewer turn — reviewing `evidence.py` against the DoD…") and close with the hand-off nudge. The structured block lives in the file; the human gets a human sentence.
@@ -136,6 +161,7 @@ ROUND: 1 / 5
 - Artifact under review: <PATH or PR URL>
 - Definition of Done: <ONE LINE — the bar the Reviewer checks against>
 - Producer: <name/agent>   ·   Reviewer: <name/agent>
+- Handoff: manual nudge   <!-- or "hands-free poll (all-Claude)" — see skill -->
 - Started: <YYYY-MM-DD>
 
 ## Ground rules
