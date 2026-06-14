@@ -11,6 +11,8 @@ A relay is a turn-based review loop carried entirely inside a single Markdown fi
 
 This skill does two things: **start** a relay (scaffold the dated file from the template in the Appendix) and **take a turn** in an existing one. The **Producer always starts it** — the same step that creates the dated folder and file also writes turn 1. The Reviewer never creates the file; it only reads and appends.
 
+**Honest caveat — independence is only as good as the second agent.** Two Claude sessions share a model and much of the same repo context, so they share blind spots: a same-model relay catches what a fresh pass with fresh framing catches, not what a truly independent reviewer would. For genuinely independent eyes, run a *different* model in the Reviewer window (e.g. Codex, or a different Claude tier). The file-based protocol is model-agnostic by design — any agent that can read and append the file can take a turn.
+
 ## When to use
 
 - The user says "set up a relay", "start a relay", "run a producer/reviewer loop", "two-agent review", "have one agent review the other".
@@ -40,7 +42,7 @@ One round = a Producer turn + a Reviewer turn. The relay ends when the Reviewer'
 
 ## Mode 1 — Start a relay (Producer only)
 
-1. Gather three things (pull from context first; ask only what's missing): the **artifact under review** (path or PR), a one-line **Definition of Done**, and a **slug**.
+1. Gather three things (pull from context first; ask only what's missing): the **artifact under review** (a local path — or a PR, in which case **check the branch out locally first**, since the direct-edit and `git diff` mechanics assume the artifact is in the shared working tree), a one-line **Definition of Done**, and a **slug**.
 2. Get today's date and create `relay-system/<date>/` if it doesn't exist (this also creates `relay-system/` on first ever use).
 3. Write `relay-system/<date>/<slug>.md` using the template in the **Appendix** below. Fill `<TITLE>`, the Setup fields, and `Started`. Leave `NEXT: Producer`, `STATUS: Open`, `ROUND: 1 / 5`.
 4. Take Round 1 immediately (Mode 2) — you're the Producer and you have the request. Folder, file, and turn 1 are all one step.
@@ -57,7 +59,7 @@ If the user asks to take a turn but the file doesn't exist yet, you're in this m
    - **Reviewer:** review against the Definition of Done. Make the direct edits you're confident in and log each one. Leave judgment calls as findings for the Producer. Set a verdict.
 4. **Append your block** at the bottom, directly above the marker line. Never edit earlier turns.
 5. **Update the header:** flip `NEXT`; bump `ROUND` when a Producer opens a new cycle; set `STATUS` (`Approved` ends the relay; `Escalated` if a Blocker is unresolved at the max round).
-6. **Commit your turn:** `relay(<slug>): <role> r<N>`. This is what lets the other agent `git diff` exactly what you did — the safety net for the Reviewer's direct edits.
+6. **Commit your turn:** `relay(<slug>): <role> r<N>`, then fill the hash into your block's `Commit:` line. This is what lets the other agent `git diff` exactly what you did — the safety net for the Reviewer's direct edits. If your turn changed no tracked files — a comments-only review, or the log itself is gitignored — there's nothing to commit; write `Commit: none (comments only)` and rely on the file on disk, which the other window reads directly.
 7. **Hand off in one line.** Close your reply to the human with who goes next, e.g. *"Round 2 Reviewer done — Changes requested, 1 Blocker. Tell the Producer to take its turn."* The human nudges; they never paste.
 
 ### Turn block formats
@@ -93,7 +95,9 @@ Append exactly one of these per turn.
 
 ## Guardrails
 
-- **Never act out of turn**, and never edit a prior turn. The header pointer and the marker are load-bearing — respect them.
+- **Never act out of turn**, and never edit a prior turn. The header pointer and the marker are load-bearing — respect them. (The one exception: immediately after committing, you may fill in your *own* just-written turn's `Commit:` line with the hash. Nothing else in a prior block is ever touched.)
+- **Only one window acts at a time — the pointer is honor-system, not a lock.** Both windows share one working tree. The human serializes by nudging one window at a time; never start a turn while the other window may still be mid-edit, or the shared file and tree can be clobbered.
+- **Clean tree at every handoff.** Before you flip `NEXT`, commit (or stash) all your changes — never hand off with uncommitted edits sitting in the working tree. A dirty tree means the next agent reads your half-finished state as if it were the artifact.
 - **Smallest change that satisfies the finding.** Don't rewrite the artifact wholesale; the Reviewer fixes, it doesn't rebuild.
 - **No silent edits.** Every direct change the Reviewer makes gets a log line (file · what · why), so the Producer can see it without spelunking.
 - **No ignored Blockers.** The Producer resolves or explicitly contests each one — never skips it.
@@ -132,14 +136,15 @@ ROUND: 1 / 5
 - Started: <YYYY-MM-DD>
 
 ## Ground rules
-1. This file is the single source of truth. If it isn't written here, assume the other agent doesn't know it.
+1. This file is the single source of truth. If it isn't written here, assume the other agent doesn't know it. The two agents may be different tools (e.g. Claude and Codex) and never share memory.
 2. Read the whole file. Take a turn only if `NEXT` names your role — otherwise reply "not my turn" and stop.
-3. One turn = one block appended at the very bottom, above the marker. Never edit earlier turns. Then update `NEXT`, `STATUS`, `ROUND` at the top.
+3. One turn = one block appended at the very bottom, above the marker. Never edit earlier turns. Then update `NEXT`, `STATUS`, `ROUND` at the top. (Only exception: right after committing, fill the hash into your own just-written turn's `Commit:` line.)
 4. Stay tight. Requests and findings are bullets, not essays.
 5. The Reviewer edits the artifact directly for fixes it's confident in, and logs every edit (file · what · why). The Producer may keep, change, or revert each — with a one-line reason.
 6. Grade every finding:  `[Blocker]` must fix to ship · `[Should]` strong recommendation · `[Nit]` optional.
 7. The Reviewer posts a Verdict every turn. The relay ends on **Approved**. A Blocker still open at the max `ROUND` → set `STATUS: Escalated` and hand back to the human.
-8. End your turn by committing it: `relay(<slug>): <role> r<N>` — so the other agent can `git diff` exactly what changed.
+8. End your turn by committing it: `relay(<slug>): <role> r<N>`, then fill the hash into your `Commit:` line — so the other agent can `git diff` exactly what changed. If your turn touched no tracked files (comments-only, or this log is gitignored), write `Commit: none (comments only)`.
+9. **One window at a time, clean tree at every handoff.** Both agents share one working tree; the `NEXT` pointer is honor-system, not a lock. Never start a turn while the other window may still be editing, and never flip `NEXT` with uncommitted changes left in the tree — commit or stash first, so the next agent never inherits half-finished state.
 
 ## Roles
 - **Producer** — builds/edits the artifact, requests review, responds to findings, updates.
