@@ -206,6 +206,7 @@ Abbreviated — skills and their entry points only. Repo meta (`AGENTS.md`, `CHA
 ├── record-decision/SKILL.md      # The ledger — record → revisit
 ├── giantbrains/SKILL.md          # The router — one door to the suite
 ├── phase-qa/SKILL.md             # Plan QA checklists + phase diff review
+├── spike-360/SKILL.md            # Architecture premise check — classify authority before planning
 ├── snapshot/SKILL.md             # Session recovery
 ├── utils/                        # Standalone tooling — not part of the suite
 │   ├── README.md
